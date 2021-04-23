@@ -28,119 +28,33 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <tesseract_common/status_code.h>
-#include <tesseract_common/utils.h>
-#include <Eigen/Geometry>
-#include <tinyxml2.h>
+#include <memory>
+#include <vector>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_scene_graph/utils.h>
-#include <tesseract_scene_graph/resource_locator.h>
-#include <tesseract_urdf/origin.h>
-#include <tesseract_urdf/geometry.h>
-
-#ifdef SWIG
-%shared_ptr(tesseract_urdf::CollisionStatusCategory)
-#endif  // SWIG
+namespace tinyxml2
+{
+class XMLElement;
+}
+namespace tesseract_scene_graph
+{
+class Collision;
+class ResourceLocator;
+}  // namespace tesseract_scene_graph
 
 namespace tesseract_urdf
 {
-class CollisionStatusCategory : public tesseract_common::StatusCategory
-{
-public:
-  CollisionStatusCategory() : name_("CollisionStatusCategory") {}
-  const std::string& name() const noexcept override { return name_; }
-  std::string message(int code) const override
-  {
-    switch (code)
-    {
-      case Success:
-        return "Sucessfully parsed 'collision' element";
-      case ErrorParsingOriginElement:
-        return "Error parsing collision 'origin' element!";
-      case ErrorMissingGeometryElement:
-        return "Error missing collision 'geometry' element!";
-      case ErrorParsingGeometryElement:
-        return "Error parsing collision 'geometry' element!";
-      default:
-        return "Invalid error code for " + name_ + "!";
-    }
-  }
-
-  enum
-  {
-    Success = 0,
-    ErrorParsingOriginElement = -1,
-    ErrorMissingGeometryElement = -2,
-    ErrorParsingGeometryElement = -3
-  };
-
-private:
-  std::string name_;
-};
-
-inline tesseract_common::StatusCode::Ptr parse(std::vector<tesseract_scene_graph::Collision::Ptr>& collisions,
-                                               const tinyxml2::XMLElement* xml_element,
-                                               const tesseract_scene_graph::ResourceLocator::Ptr& locator,
-                                               const int version)
-{
-  collisions.clear();
-  auto status_cat = std::make_shared<CollisionStatusCategory>();
-
-  // get name
-  std::string collision_name = tesseract_common::StringAttribute(xml_element, "name", "");
-
-  // get origin
-  Eigen::Isometry3d collision_origin = Eigen::Isometry3d::Identity();
-  const tinyxml2::XMLElement* origin = xml_element->FirstChildElement("origin");
-  if (origin != nullptr)
-  {
-    auto status = parse(collision_origin, origin, version);
-    if (!(*status))
-      return std::make_shared<tesseract_common::StatusCode>(
-          CollisionStatusCategory::ErrorParsingOriginElement, status_cat, status);
-  }
-
-  // get geometry
-  const tinyxml2::XMLElement* geometry = xml_element->FirstChildElement("geometry");
-  if (geometry == nullptr)
-    return std::make_shared<tesseract_common::StatusCode>(CollisionStatusCategory::ErrorMissingGeometryElement,
-                                                          status_cat);
-
-  std::vector<tesseract_geometry::Geometry::Ptr> geometries;
-  auto status = parse(geometries, geometry, locator, false, version);
-  if (!(*status))
-    return std::make_shared<tesseract_common::StatusCode>(
-        CollisionStatusCategory::ErrorParsingGeometryElement, status_cat, status);
-
-  if (geometries.size() == 1)
-  {
-    auto collision = std::make_shared<tesseract_scene_graph::Collision>();
-    collision->name = collision_name;
-    collision->origin = collision_origin;
-    collision->geometry = geometries[0];
-    collisions.push_back(collision);
-  }
-  else
-  {
-    int i = 0;
-    for (const auto& g : geometries)
-    {
-      auto collision = std::make_shared<tesseract_scene_graph::Collision>();
-
-      if (collision_name.empty())
-        collision->name = collision_name;
-      else
-        collision->name = collision_name + "_" + std::to_string(i);
-
-      collision->origin = collision_origin;
-      collision->geometry = g;
-      collisions.push_back(collision);
-    }
-  }
-
-  return std::make_shared<tesseract_common::StatusCode>(CollisionStatusCategory::Success, status_cat);
-}
+/**
+ * @brief Parse xml element collision
+ * @param xml_element The xml element
+ * @param locator The Tesseract resource locator
+ * @param version The version number
+ * @return A vector tesseract_scene_graph Collision objects
+ */
+std::vector<std::shared_ptr<tesseract_scene_graph::Collision>>
+parseCollision(const tinyxml2::XMLElement* xml_element,
+               const std::shared_ptr<tesseract_scene_graph::ResourceLocator>& locator,
+               int version);
 
 }  // namespace tesseract_urdf
 
