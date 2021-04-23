@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>tesseract_urdf</name>
-  <version>0.3.1</version>
+  <version>0.4.0</version>
   <description>The tesseract_urdf package for parsing tesseract specific urdf</description>
   <maintainer email="levi.armstrong@swri.org">Levi Armstrong</maintainer>
   <license>Apache 2.0</license>
@@ -17,6 +17,7 @@
   <depend>tesseract_scene_graph</depend>
 
   <build_depend>libpcl-all-dev</build_depend>
+  <build_export_depend>libpcl-all-dev</build_export_depend>
   <exec_depend>libpcl-all</exec_depend>
 
   <build_depend>eigen</build_depend>

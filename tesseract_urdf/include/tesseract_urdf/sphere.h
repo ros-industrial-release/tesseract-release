@@ -28,61 +28,26 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <tesseract_common/status_code.h>
-#include <Eigen/Geometry>
-#include <tinyxml2.h>
+#include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_geometry/impl/sphere.h>
-
-#ifdef SWIG
-%shared_ptr(tesseract_urdf::SphereStatusCategory)
-#endif  // SWIG
+namespace tinyxml2
+{
+class XMLElement;
+}
+namespace tesseract_geometry
+{
+class Sphere;
+}
 
 namespace tesseract_urdf
 {
-class SphereStatusCategory : public tesseract_common::StatusCategory
-{
-public:
-  SphereStatusCategory() : name_("SphereStatusCategory") {}
-  const std::string& name() const noexcept override { return name_; }
-  std::string message(int code) const override
-  {
-    switch (code)
-    {
-      case Success:
-        return "Sucessful";
-      case ErrorAttributeRadius:
-        return "Missing or failed parsing sphere attribute radius!";
-      default:
-        return "Invalid error code for " + name_ + "!";
-    }
-  }
-
-  enum
-  {
-    Success = 0,
-    ErrorAttributeRadius = -1
-  };
-
-private:
-  std::string name_;
-};
-
-inline tesseract_common::StatusCode::Ptr parse(tesseract_geometry::Sphere::Ptr& sphere,
-                                               const tinyxml2::XMLElement* xml_element,
-                                               const int /*version*/)
-{
-  sphere = nullptr;
-  auto status_cat = std::make_shared<SphereStatusCategory>();
-
-  double radius;
-  if (xml_element->QueryDoubleAttribute("radius", &(radius)) != tinyxml2::XML_SUCCESS || !(radius > 0))
-    return std::make_shared<tesseract_common::StatusCode>(SphereStatusCategory::ErrorAttributeRadius, status_cat);
-
-  sphere = std::make_shared<tesseract_geometry::Sphere>(radius);
-  return std::make_shared<tesseract_common::StatusCode>(SphereStatusCategory::Success, status_cat);
-}
+/**
+ * @brief Parse a xml sphere element
+ * @param xml_element The xml element
+ * @return Tesseract Geometry Sphere
+ */
+std::shared_ptr<tesseract_geometry::Sphere> parseSphere(const tinyxml2::XMLElement* xml_element, int version);
 
 }  // namespace tesseract_urdf
 

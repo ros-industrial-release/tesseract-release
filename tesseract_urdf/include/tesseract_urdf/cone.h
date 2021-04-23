@@ -28,66 +28,26 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <tesseract_common/status_code.h>
-#include <Eigen/Geometry>
-#include <tinyxml2.h>
+#include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_geometry/impl/cone.h>
+namespace tinyxml2
+{
+class XMLElement;
+}
+namespace tesseract_geometry
+{
+class Cone;
+}
 
-#ifdef SWIG
-%shared_ptr(tesseract_urdf::ConeStatusCategory)
-#endif  // SWIG
 namespace tesseract_urdf
 {
-class ConeStatusCategory : public tesseract_common::StatusCategory
-{
-public:
-  ConeStatusCategory() : name_("ConeStatusCategory") {}
-  const std::string& name() const noexcept override { return name_; }
-  std::string message(int code) const override
-  {
-    switch (code)
-    {
-      case Success:
-        return "Sucessful";
-      case ErrorAttributeLength:
-        return "Missing or failed parsing cone attribute length!";
-      case ErrorAttributeRadius:
-        return "Missing or failed parsing cone attribute radius!";
-      default:
-        return "Invalid error code for " + name_ + "!";
-    }
-  }
-
-  enum
-  {
-    Success = 0,
-    ErrorAttributeLength = -1,
-    ErrorAttributeRadius = -2
-  };
-
-private:
-  std::string name_;
-};
-
-inline tesseract_common::StatusCode::Ptr parse(tesseract_geometry::Cone::Ptr& cone,
-                                               const tinyxml2::XMLElement* xml_element,
-                                               const int /*version*/)
-{
-  cone = nullptr;
-  auto status_cat = std::make_shared<ConeStatusCategory>();
-
-  double r, l;
-  if (xml_element->QueryDoubleAttribute("length", &(l)) != tinyxml2::XML_SUCCESS || !(l > 0))
-    return std::make_shared<tesseract_common::StatusCode>(ConeStatusCategory::ErrorAttributeLength, status_cat);
-
-  if (xml_element->QueryDoubleAttribute("radius", &(r)) != tinyxml2::XML_SUCCESS || !(r > 0))
-    return std::make_shared<tesseract_common::StatusCode>(ConeStatusCategory::ErrorAttributeRadius, status_cat);
-
-  cone = std::make_shared<tesseract_geometry::Cone>(r, l);
-  return std::make_shared<tesseract_common::StatusCode>(ConeStatusCategory::Success, status_cat);
-}
+/**
+ * @brief Parse a xml cone element
+ * @param xml_element The xml element
+ * @return Tesseract Geometry Cone
+ */
+std::shared_ptr<tesseract_geometry::Cone> parseCone(const tinyxml2::XMLElement* xml_element, int version);
 
 }  // namespace tesseract_urdf
 
