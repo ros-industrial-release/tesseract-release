@@ -28,12 +28,7 @@ TEST(TesseractURDFUnit, parse_urdf)  // NOLINT
              <link name="l1"/>
              <link name="l2"/>
            </robot>)";
-    tesseract_scene_graph::SceneGraph::Ptr sg;
-    auto status = tesseract_urdf::parseURDFString(sg, str, resource_locator);
-    EXPECT_TRUE(*status);
-    EXPECT_EQ(status->category()->name(), "URDFStatusCategory");
-    EXPECT_FALSE(status->category()->message(999).empty());  // Test invalid error code
-    EXPECT_FALSE(status->message().empty());
+    tesseract_scene_graph::SceneGraph::Ptr sg = tesseract_urdf::parseURDFString(str, resource_locator);
     EXPECT_TRUE(sg != nullptr);
     EXPECT_TRUE(sg->getName() == "test");
     EXPECT_TRUE(sg->isTree());
@@ -87,12 +82,7 @@ TEST(TesseractURDFUnit, parse_urdf)  // NOLINT
              <link name="l1"/>
              <link name="l2"/>
            </robot>)";
-    tesseract_scene_graph::SceneGraph::Ptr sg;
-    auto status = tesseract_urdf::parseURDFString(sg, str, resource_locator);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
-    EXPECT_TRUE(sg == nullptr);
-    CONSOLE_BRIDGE_logError(status->message().c_str());
+    EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));
   }
 
   {
@@ -115,8 +105,7 @@ TEST(TesseractURDFUnit, parse_urdf)  // NOLINT
              <link name="l1"/>
              <link name="l2"/>
            </robot>)";
-    tesseract_scene_graph::SceneGraph::Ptr sg = tesseract_urdf::parseURDFString(str, resource_locator);
-    EXPECT_TRUE(sg == nullptr);
+    EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));
   }
 
   {
@@ -135,12 +124,7 @@ TEST(TesseractURDFUnit, parse_urdf)  // NOLINT
              <link name="l1"/>
              <link name="l3"/>
            </robot>)";
-    tesseract_scene_graph::SceneGraph::Ptr sg;
-    auto status = tesseract_urdf::parseURDFString(sg, str, resource_locator);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
-    EXPECT_TRUE(sg == nullptr);
-    CONSOLE_BRIDGE_logError(status->message().c_str());
+    EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));
   }
 
   {
@@ -160,12 +144,7 @@ TEST(TesseractURDFUnit, parse_urdf)  // NOLINT
              <link name="l2"/>
              <link name="l3"/>
            </robot>)";
-    tesseract_scene_graph::SceneGraph::Ptr sg;
-    auto status = tesseract_urdf::parseURDFString(sg, str, resource_locator);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
-    EXPECT_TRUE(sg == nullptr);
-    CONSOLE_BRIDGE_logError(status->message().c_str());
+    EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));
   }
 
   {
@@ -184,12 +163,7 @@ TEST(TesseractURDFUnit, parse_urdf)  // NOLINT
              <link name="l1"/>
              <link name="l2"/>
            </robot>)";
-    tesseract_scene_graph::SceneGraph::Ptr sg;
-    auto status = tesseract_urdf::parseURDFString(sg, str, resource_locator);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
-    EXPECT_TRUE(sg == nullptr);
-    CONSOLE_BRIDGE_logError(status->message().c_str());
+    EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));
   }
 
   {
@@ -209,12 +183,7 @@ TEST(TesseractURDFUnit, parse_urdf)  // NOLINT
              <link name="l2"/>
              <link name="l1"/>
            </robot>)";
-    tesseract_scene_graph::SceneGraph::Ptr sg;
-    auto status = tesseract_urdf::parseURDFString(sg, str, resource_locator);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
-    EXPECT_TRUE(sg == nullptr);
-    CONSOLE_BRIDGE_logError(status->message().c_str());
+    EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));
   }
 
   {
@@ -233,12 +202,7 @@ TEST(TesseractURDFUnit, parse_urdf)  // NOLINT
              <link name="l1"/>
              <link name="l2"/>
            </robot>)";
-    tesseract_scene_graph::SceneGraph::Ptr sg;
-    auto status = tesseract_urdf::parseURDFString(sg, str, resource_locator);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
-    EXPECT_TRUE(sg == nullptr);
-    CONSOLE_BRIDGE_logError(status->message().c_str());
+    EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));
   }
 
   {
@@ -262,20 +226,22 @@ TEST(TesseractURDFUnit, parse_urdf)  // NOLINT
              <link name="l2"/>
              <link name="l3"/>
            </robot>)";
-    tesseract_scene_graph::SceneGraph::Ptr sg;
-    auto status = tesseract_urdf::parseURDFString(sg, str, resource_locator);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
-    EXPECT_TRUE(sg == nullptr);
-    CONSOLE_BRIDGE_logError(status->message().c_str());
+    EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));
   }
 
   {
-    tesseract_scene_graph::SceneGraph::Ptr sg;
-    auto status = tesseract_urdf::parseURDFFile(
-        sg, std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf", resource_locator);
-    EXPECT_TRUE(*status);
-    EXPECT_FALSE(status->message().empty());
+    tesseract_scene_graph::SceneGraph::Ptr sg = tesseract_urdf::parseURDFFile(std::string(TESSERACT_SUPPORT_DIR) + "/ur"
+                                                                                                                   "df/"
+                                                                                                                   "lbr"
+                                                                                                                   "_ii"
+                                                                                                                   "wa_"
+                                                                                                                   "14_"
+                                                                                                                   "r82"
+                                                                                                                   "0."
+                                                                                                                   "urd"
+                                                                                                                   "f",
+                                                                              resource_locator);
+    EXPECT_TRUE(sg != nullptr);
   }
 }
 
@@ -310,10 +276,7 @@ TEST(TesseractURDFUnit, parse_urdf_with_available_materials)  // NOLINT
              </link>
              <link name="l2"/>
            </robot>)";
-    tesseract_scene_graph::SceneGraph::Ptr sg;
-    auto status = tesseract_urdf::parseURDFString(sg, str, resource_locator);
-    EXPECT_TRUE(*status);
-    EXPECT_FALSE(status->message().empty());
+    tesseract_scene_graph::SceneGraph::Ptr sg = tesseract_urdf::parseURDFString(str, resource_locator);
     EXPECT_TRUE(sg != nullptr);
     EXPECT_TRUE(sg->getName() == "test");
     EXPECT_TRUE(sg->isTree());
@@ -357,10 +320,7 @@ TEST(TesseractURDFUnit, parse_urdf_with_available_materials)  // NOLINT
                </visual>
              </link>
            </robot>)";
-    tesseract_scene_graph::SceneGraph::Ptr sg;
-    auto status = tesseract_urdf::parseURDFString(sg, str, resource_locator);
-    EXPECT_TRUE(*status);
-    EXPECT_FALSE(status->message().empty());
+    tesseract_scene_graph::SceneGraph::Ptr sg = tesseract_urdf::parseURDFString(str, resource_locator);
     EXPECT_TRUE(sg != nullptr);
     EXPECT_TRUE(sg->getName() == "test");
     EXPECT_TRUE(sg->isTree());
@@ -404,10 +364,7 @@ TEST(TesseractURDFUnit, parse_urdf_with_available_materials)  // NOLINT
                </visual>
              </link>
            </robot>)";
-    tesseract_scene_graph::SceneGraph::Ptr sg;
-    auto status = tesseract_urdf::parseURDFString(sg, str, resource_locator);
-    EXPECT_FALSE(*status);
-    EXPECT_FALSE(status->message().empty());
+    EXPECT_ANY_THROW(tesseract_urdf::parseURDFString(str, resource_locator));
   }
 
   {
@@ -446,10 +403,8 @@ TEST(TesseractURDFUnit, parse_urdf_with_available_materials)  // NOLINT
                </visual>
              </link>
            </robot>)";
-    tesseract_scene_graph::SceneGraph::Ptr sg;
-    auto status = tesseract_urdf::parseURDFString(sg, str, resource_locator);
-    EXPECT_TRUE(*status);
-    EXPECT_FALSE(status->message().empty());
+    tesseract_scene_graph::SceneGraph::Ptr sg = tesseract_urdf::parseURDFString(str, resource_locator);
+    EXPECT_TRUE(sg != nullptr);
   }
 }
 
