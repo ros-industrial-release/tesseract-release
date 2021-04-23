@@ -1,0 +1,37 @@
+ros-noetic-tesseract-support (0.4.0-1focal) focal; urgency=high
+
+  * Fix package build depends
+  * Contributors: Levi Armstrong
+
+ -- Levi Armstrong <levi.armstrong@swri.org>  Fri, 23 Apr 2021 05:00:00 -0000
+
+ros-noetic-tesseract-support (0.3.1-1focal) focal; urgency=high
+
+
+
+ -- Levi Armstrong <levi.armstrong@swri.org>  Wed, 14 Apr 2021 05:00:00 -0000
+
+ros-noetic-tesseract-support (0.3.0-1focal) focal; urgency=high
+
+  * Add cmake format
+  * Use boost targets, add cpack and license file (#572 <https://github.com/ros-industrial-consortium/tesseract/issues/572>)
+  * Contributors: Levi Armstrong
+
+ -- Levi Armstrong <levi.armstrong@swri.org>  Fri, 09 Apr 2021 05:00:00 -0000
+
+ros-noetic-tesseract-support (0.2.0-1focal) focal; urgency=high
+
+  * Add manipulator manager unit tests
+  * Update cmake_common_scripts to ros_industrial_cmake_boilerplate
+  * Move all directories in tesseract directory up one level
+  * Contributors: Levi Armstrong
+
+ -- Levi Armstrong <levi.armstrong@swri.org>  Wed, 17 Feb 2021 06:00:00 -0000
+
+ros-noetic-tesseract-support (0.1.0-1focal) focal; urgency=high
+
+
+
+ -- Levi Armstrong <levi.armstrong@swri.org>  Thu, 31 Dec 2020 06:00:00 -0000
+
+
