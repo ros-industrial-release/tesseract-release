@@ -45,8 +45,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_scene_graph/utils.h>
 #include <tesseract_scene_graph/resource_locator.h>
 #include <tesseract_urdf/urdf_parser.h>
+#include <tesseract_srdf/srdf_model.h>
 #include <tesseract_common/manipulator_info.h>
 #include <tesseract_common/types.h>
+#include <tesseract_common/utils.h>
 
 #ifdef SWIG
 %shared_ptr(tesseract_environment::Environment)
@@ -109,7 +111,7 @@ public:
    */
   template <typename S>
   bool init(const tesseract_scene_graph::SceneGraph& scene_graph,
-            const tesseract_scene_graph::SRDFModel::ConstPtr& srdf_model = nullptr)
+            const tesseract_srdf::SRDFModel::ConstPtr& srdf_model = nullptr)
   {
     Commands commands = getInitCommands(scene_graph, srdf_model);
     return init<S>(commands);
@@ -121,11 +123,15 @@ public:
     resource_locator_ = locator;
 
     // Parse urdf string into Scene Graph
-    tesseract_scene_graph::SceneGraph::Ptr scene_graph =
-        tesseract_urdf::parseURDFString(urdf_string, resource_locator_);
-    if (scene_graph == nullptr)
+    tesseract_scene_graph::SceneGraph::Ptr scene_graph;
+    try
+    {
+      scene_graph = tesseract_urdf::parseURDFString(urdf_string, resource_locator_);
+    }
+    catch (const std::exception& e)
     {
       CONSOLE_BRIDGE_logError("Failed to parse URDF.");
+      tesseract_common::printNestedException(e);
       return false;
     }
 
@@ -141,19 +147,28 @@ public:
     resource_locator_ = locator;
 
     // Parse urdf string into Scene Graph
-    tesseract_scene_graph::SceneGraph::Ptr scene_graph =
-        tesseract_urdf::parseURDFString(urdf_string, resource_locator_);
-    if (scene_graph == nullptr)
+    tesseract_scene_graph::SceneGraph::Ptr scene_graph;
+    try
+    {
+      scene_graph = tesseract_urdf::parseURDFString(urdf_string, resource_locator_);
+    }
+    catch (const std::exception& e)
     {
       CONSOLE_BRIDGE_logError("Failed to parse URDF.");
+      tesseract_common::printNestedException(e);
       return false;
     }
 
     // Parse srdf string into SRDF Model
-    tesseract_scene_graph::SRDFModel::Ptr srdf = std::make_shared<tesseract_scene_graph::SRDFModel>();
-    if (!srdf->initString(*scene_graph, srdf_string))
+    auto srdf = std::make_shared<tesseract_srdf::SRDFModel>();
+    try
+    {
+      srdf->initString(*scene_graph, srdf_string);
+    }
+    catch (const std::exception& e)
     {
       CONSOLE_BRIDGE_logError("Failed to parse SRDF.");
+      tesseract_common::printNestedException(e);
       return false;
     }
 
@@ -167,11 +182,15 @@ public:
     resource_locator_ = locator;
 
     // Parse urdf file into Scene Graph
-    tesseract_scene_graph::SceneGraph::Ptr scene_graph =
-        tesseract_urdf::parseURDFFile(urdf_path.string(), resource_locator_);
-    if (scene_graph == nullptr)
+    tesseract_scene_graph::SceneGraph::Ptr scene_graph;
+    try
+    {
+      scene_graph = tesseract_urdf::parseURDFFile(urdf_path.string(), resource_locator_);
+    }
+    catch (const std::exception& e)
     {
       CONSOLE_BRIDGE_logError("Failed to parse URDF.");
+      tesseract_common::printNestedException(e);
       return false;
     }
 
@@ -187,19 +206,28 @@ public:
     resource_locator_ = locator;
 
     // Parse urdf file into Scene Graph
-    tesseract_scene_graph::SceneGraph::Ptr scene_graph =
-        tesseract_urdf::parseURDFFile(urdf_path.string(), resource_locator_);
-    if (scene_graph == nullptr)
+    tesseract_scene_graph::SceneGraph::Ptr scene_graph;
+    try
+    {
+      scene_graph = tesseract_urdf::parseURDFFile(urdf_path.string(), resource_locator_);
+    }
+    catch (const std::exception& e)
     {
       CONSOLE_BRIDGE_logError("Failed to parse URDF.");
+      tesseract_common::printNestedException(e);
       return false;
     }
 
     // Parse srdf file into SRDF Model
-    auto srdf = std::make_shared<tesseract_scene_graph::SRDFModel>();
-    if (!srdf->initFile(*scene_graph, srdf_path.string()))
+    auto srdf = std::make_shared<tesseract_srdf::SRDFModel>();
+    try
+    {
+      srdf->initFile(*scene_graph, srdf_path.string());
+    }
+    catch (const std::exception& e)
     {
       CONSOLE_BRIDGE_logError("Failed to parse SRDF.");
+      tesseract_common::printNestedException(e);
       return false;
     }
 
@@ -524,7 +552,7 @@ public:
    * @param kin_info The kinematics information
    * @return true if successful, otherwise false
    */
-  virtual bool addKinematicsInformation(const tesseract_scene_graph::KinematicsInformation& kin_info);
+  virtual bool addKinematicsInformation(const tesseract_srdf::KinematicsInformation& kin_info);
 
   /**
    * @brief Adds a link to the environment
@@ -764,7 +792,7 @@ private:
 
   bool initHelper(const Commands& commands);
   Commands getInitCommands(const tesseract_scene_graph::SceneGraph& scene_graph,
-                           const tesseract_scene_graph::SRDFModel::ConstPtr& srdf_model = nullptr);
+                           const tesseract_srdf::SRDFModel::ConstPtr& srdf_model = nullptr);
 
   /** @brief Apply Command Helper which does not lock */
   bool applyCommandsHelper(const Commands& commands);
