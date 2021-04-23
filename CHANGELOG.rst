@@ -2,6 +2,10 @@
 Changelog for package tesseract_geometry
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.4.0 (2021-04-23)
+------------------
+* No changes
+
 0.3.1 (2021-04-14)
 ------------------
 * Move tesseract_variables() before any use of custom macros
