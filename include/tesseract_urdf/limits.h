@@ -28,91 +28,27 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <tesseract_common/status_code.h>
-#include <Eigen/Geometry>
-#include <tinyxml2.h>
+#include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_scene_graph/joint.h>
-
-#ifdef SWIG
-%shared_ptr(tesseract_urdf::LimitsStatusCategory)
-#endif  // SWIG
+namespace tinyxml2
+{
+class XMLElement;
+}
+namespace tesseract_scene_graph
+{
+class JointLimits;
+}
 
 namespace tesseract_urdf
 {
-class LimitsStatusCategory : public tesseract_common::StatusCategory
-{
-public:
-  LimitsStatusCategory() : name_("LimitsStatusCategory") {}
-  const std::string& name() const noexcept override { return name_; }
-  std::string message(int code) const override
-  {
-    switch (code)
-    {
-      case Success:
-        return "Sucessful";
-      case ErrorAttributeLower:
-        return "Missing or failed to parse limits attribute 'lower'!";
-      case ErrorAttributeUpper:
-        return "Missing or failed to parse limits attribute 'upper'!";
-      case ErrorAttributeEffort:
-        return "Missing or failed to parse limits attribute 'effort'!";
-      case ErrorAttributeVelocity:
-        return "Missing or failed to parse limits attribute 'velocity'!";
-      case ErrorAttributeAcceleration:
-        return "Failed to parse limits attribute 'acceleration'!";
-      default:
-        return "Invalid error code for " + name_ + "!";
-    }
-  }
-
-  enum
-  {
-    Success = 0,
-    ErrorAttributeLower = -1,
-    ErrorAttributeUpper = -2,
-    ErrorAttributeEffort = -3,
-    ErrorAttributeVelocity = -4,
-    ErrorAttributeAcceleration = -5
-  };
-
-private:
-  std::string name_;
-};
-
-inline tesseract_common::StatusCode::Ptr parse(tesseract_scene_graph::JointLimits::Ptr& limits,
-                                               const tinyxml2::XMLElement* xml_element,
-                                               const int /*version*/)
-{
-  limits = nullptr;
-
-  tesseract_common::StatusCategory::Ptr status_cat = std::make_shared<LimitsStatusCategory>();
-  auto l = std::make_shared<tesseract_scene_graph::JointLimits>();
-
-  tinyxml2::XMLError status = xml_element->QueryDoubleAttribute("lower", &(l->lower));
-  if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
-    return std::make_shared<tesseract_common::StatusCode>(LimitsStatusCategory::ErrorAttributeLower, status_cat);
-
-  status = xml_element->QueryDoubleAttribute("upper", &(l->upper));
-  if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
-    return std::make_shared<tesseract_common::StatusCode>(LimitsStatusCategory::ErrorAttributeUpper, status_cat);
-
-  if (xml_element->QueryDoubleAttribute("effort", &(l->effort)) != tinyxml2::XML_SUCCESS)
-    return std::make_shared<tesseract_common::StatusCode>(LimitsStatusCategory::ErrorAttributeEffort, status_cat);
-
-  if (xml_element->QueryDoubleAttribute("velocity", &(l->velocity)) != tinyxml2::XML_SUCCESS)
-    return std::make_shared<tesseract_common::StatusCode>(LimitsStatusCategory::ErrorAttributeVelocity, status_cat);
-
-  status = xml_element->QueryDoubleAttribute("acceleration", &(l->acceleration));
-  if (status == tinyxml2::XML_NO_ATTRIBUTE)
-    l->acceleration = 0.5 * l->velocity;
-  else if (status != tinyxml2::XML_SUCCESS)
-    return std::make_shared<tesseract_common::StatusCode>(LimitsStatusCategory::ErrorAttributeAcceleration, status_cat);
-
-  limits = l;
-  return std::make_shared<tesseract_common::StatusCode>(LimitsStatusCategory::Success, status_cat);
-}
+/**
+ * @brief Parse xml element limits
+ * @param xml_element The xml element
+ * @param version The version number
+ * @return A Tesseract JointLimits
+ */
+std::shared_ptr<tesseract_scene_graph::JointLimits> parseLimits(const tinyxml2::XMLElement* xml_element, int version);
 
 }  // namespace tesseract_urdf
 

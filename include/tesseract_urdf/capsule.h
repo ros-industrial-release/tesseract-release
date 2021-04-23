@@ -25,68 +25,29 @@
  */
 #ifndef TESSERACT_URDF_CAPSULE_H
 #define TESSERACT_URDF_CAPSULE_H
+
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
-#include <tesseract_common/status_code.h>
-#include <Eigen/Geometry>
-#include <tinyxml2.h>
+#include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
-#include <tesseract_geometry/impl/capsule.h>
+namespace tinyxml2
+{
+class XMLElement;
+}
+namespace tesseract_geometry
+{
+class Capsule;
+}
 
-#ifdef SWIG
-%shared_ptr(tesseract_urdf::CapsuleStatusCategory)
-#endif  // SWIG
 namespace tesseract_urdf
 {
-class CapsuleStatusCategory : public tesseract_common::StatusCategory
-{
-public:
-  CapsuleStatusCategory() : name_("CapsuleStatusCategory") {}
-  const std::string& name() const noexcept override { return name_; }
-  std::string message(int code) const override
-  {
-    switch (code)
-    {
-      case Success:
-        return "Sucessful";
-      case ErrorAttributeLength:
-        return "Missing or failed parsing capsule attribute length!";
-      case ErrorAttributeRadius:
-        return "Missing or failed parsing capsule attribute radius!";
-      default:
-        return "Invalid error code for " + name_ + "!";
-    }
-  }
-
-  enum
-  {
-    Success = 0,
-    ErrorAttributeLength = -1,
-    ErrorAttributeRadius = -2
-  };
-
-private:
-  std::string name_;
-};
-
-inline tesseract_common::StatusCode::Ptr parse(tesseract_geometry::Capsule::Ptr& capsule,
-                                               const tinyxml2::XMLElement* xml_element,
-                                               const int /*version*/)
-{
-  capsule = nullptr;
-  auto status_cat = std::make_shared<CapsuleStatusCategory>();
-
-  double r, l;
-  if (xml_element->QueryDoubleAttribute("length", &(l)) != tinyxml2::XML_SUCCESS || !(l > 0))
-    return std::make_shared<tesseract_common::StatusCode>(CapsuleStatusCategory::ErrorAttributeLength, status_cat);
-
-  if (xml_element->QueryDoubleAttribute("radius", &(r)) != tinyxml2::XML_SUCCESS || !(r > 0))
-    return std::make_shared<tesseract_common::StatusCode>(CapsuleStatusCategory::ErrorAttributeRadius, status_cat);
-
-  capsule = std::make_shared<tesseract_geometry::Capsule>(r, l);
-  return std::make_shared<tesseract_common::StatusCode>(CapsuleStatusCategory::Success, status_cat);
-}
+/**
+ * @brief Parse a xml capsule element
+ * @param xml_element The xml element
+ * @return Tesseract Geometry Capsule
+ */
+std::shared_ptr<tesseract_geometry::Capsule> parseCapsule(const tinyxml2::XMLElement* xml_element, int version);
 
 }  // namespace tesseract_urdf
 #endif  // TESSERACT_URDF_CAPSULE_H
