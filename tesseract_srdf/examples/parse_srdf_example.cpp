@@ -2,10 +2,12 @@
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_scene_graph/utils.h>
 #include <tesseract_scene_graph/resource_locator.h>
-#include <tesseract_scene_graph/srdf_model.h>
+#include <tesseract_srdf/srdf_model.h>
+#include <tesseract_srdf/utils.h>
 #include <iostream>
 
 using namespace tesseract_scene_graph;
+using namespace tesseract_srdf;
 
 std::string toString(const SceneGraph::Path& path)
 {
@@ -129,8 +131,16 @@ int main(int /*argc*/, char** /*argv*/)
 
   // Parse the srdf
   SRDFModel srdf;
-  bool success = srdf.initFile(g, srdf_file);
-  CONSOLE_BRIDGE_logInform("SRDF loaded: %s", toString(success).c_str());
+  try
+  {
+    srdf.initFile(g, srdf_file);
+  }
+  catch (const std::exception& e)
+  {
+    CONSOLE_BRIDGE_logError("Failed to parse SRDF.");
+    tesseract_common::printNestedException(e);
+    return 1;
+  }
 
   processSRDFAllowedCollisions(g, srdf);
 
