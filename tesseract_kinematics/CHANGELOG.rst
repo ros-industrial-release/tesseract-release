@@ -2,6 +2,9 @@
 Changelog for package tesseract_kinematics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.4.1 (2021-04-24)
+------------------
+
 0.4.0 (2021-04-23)
 ------------------
 * Move srdf code to its own package tesseract_srdf
