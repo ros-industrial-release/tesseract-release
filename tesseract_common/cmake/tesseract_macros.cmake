@@ -96,7 +96,11 @@ macro(tesseract_variables)
          AND NOT
              CMAKE_SYSTEM_NAME2
              MATCHES
-             "armv7l")
+             "armv7l"
+         AND NOT
+             CMAKE_SYSTEM_NAME2
+             MATCHES
+             "unknown")
         set(TESSERACT_COMPILE_OPTIONS_PUBLIC -mno-avx)
       endif()
     elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
@@ -107,7 +111,7 @@ macro(tesseract_variables)
           -Wsign-conversion)
       message(WARNING "Non-GNU compiler detected. If using AVX instructions, Eigen alignment issues may result.")
     elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-      set(TESSERACT_COMPILE_DEFINITIONS "_USE_MATH_DEFINES=ON NOMINMAX=ON")
+      set(TESSERACT_COMPILE_DEFINITIONS "_USE_MATH_DEFINES=ON")
       message(WARNING "Non-GNU compiler detected. If using AVX instructions, Eigen alignment issues may result.")
     else()
       message(WARNING "${CMAKE_CXX_COMPILER_ID} Unsupported compiler detected.")
@@ -198,7 +202,11 @@ macro(tesseract_variables)
          AND NOT
              CMAKE_SYSTEM_NAME2
              MATCHES
-             "armv7l")
+             "armv7l"
+         AND NOT
+             CMAKE_SYSTEM_NAME2
+             MATCHES
+             "unknown")
         set(TESSERACT_COMPILE_OPTIONS_PUBLIC -mno-avx)
       endif()
     elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
@@ -209,7 +217,7 @@ macro(tesseract_variables)
           -Werror=sign-conversion)
       message(WARNING "Non-GNU compiler detected. If using AVX instructions, Eigen alignment issues may result.")
     elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-      set(TESSERACT_COMPILE_DEFINITIONS "_USE_MATH_DEFINES=ON NOMINMAX=ON")
+      set(TESSERACT_COMPILE_DEFINITIONS "_USE_MATH_DEFINES=ON")
       message(WARNING "Non-GNU compiler detected. If using AVX instructions, Eigen alignment issues may result.")
     else()
       message(WARNING "${CMAKE_CXX_COMPILER_ID} Unsupported compiler detected.")
