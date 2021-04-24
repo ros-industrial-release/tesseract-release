@@ -2,6 +2,9 @@
 Changelog for package tesseract_environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.4.1 (2021-04-24)
+------------------
+
 0.4.0 (2021-04-23)
 ------------------
 * Update tesseract_srdf to leverage nested exceptions
