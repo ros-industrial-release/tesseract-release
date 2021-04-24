@@ -1,0 +1,17 @@
+ros-noetic-tesseract-srdf (0.4.1-1buster) buster; urgency=high
+
+
+
+ -- Levi Armstrong <levi.armstrong@swri.org>  Sat, 24 Apr 2021 05:00:00 -0000
+
+ros-noetic-tesseract-srdf (0.4.0-1buster) buster; urgency=high
+
+  * Fix test names in tesseract_srdf
+  * Fix spelling in tesseract_srdf package.xml
+  * Update tesseract_srdf to leverage nested exceptions
+  * Move srdf code to its own package tesseract_srdf
+  * Contributors: Levi Armstrong
+
+ -- Levi Armstrong <levi.armstrong@swri.org>  Fri, 23 Apr 2021 05:00:00 -0000
+
+
