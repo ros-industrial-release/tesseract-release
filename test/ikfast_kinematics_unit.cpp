@@ -30,30 +30,13 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include "kinematics_test_utils.h"
-#include <tesseract_kinematics/opw/opw_inv_kin.h>
+#include "abb_irb2400_ikfast_kinematics.h"
 #include <tesseract_kinematics/kdl/kdl_fwd_kin_chain.h>
-#include <opw_kinematics/opw_parameters.h>
 
 using namespace tesseract_kinematics::test_suite;
 using namespace tesseract_kinematics;
 
-inline opw_kinematics::Parameters<double> getOPWKinematicsParamABB()
-{
-  opw_kinematics::Parameters<double> opw_params;
-  opw_params.a1 = (0.100);
-  opw_params.a2 = (-0.135);
-  opw_params.b = (0.000);
-  opw_params.c1 = (0.615);
-  opw_params.c2 = (0.705);
-  opw_params.c3 = (0.755);
-  opw_params.c4 = (0.085);
-
-  opw_params.offsets[2] = -M_PI / 2.0;
-
-  return opw_params;
-}
-
-TEST(TesseractKinematicsUnit, OPWInvKinUnit)  // NOLINT
+TEST(TesseractKinematicsUnit, IKFastInvKin)  // NOLINT
 {
   // Inverse target pose and seed
   Eigen::Isometry3d pose;
@@ -73,11 +56,9 @@ TEST(TesseractKinematicsUnit, OPWInvKinUnit)  // NOLINT
 
   KDLFwdKinChain fwd_kin(*scene_graph, base_link_name, tip_link_name);
 
-  opw_kinematics::Parameters<double> opw_params = getOPWKinematicsParamABB();
+  auto inv_kin = std::make_shared<AbbIRB2400Kinematics>(base_link_name, tip_link_name, joint_names);
 
-  auto inv_kin = std::make_shared<OPWInvKin>(opw_params, base_link_name, tip_link_name, joint_names);
-
-  EXPECT_EQ(inv_kin->getSolverName(), OPW_INV_KIN_CHAIN_SOLVER_NAME);
+  EXPECT_EQ(inv_kin->getSolverName(), IKFAST_INV_KIN_CHAIN_SOLVER_NAME);
   EXPECT_EQ(inv_kin->numJoints(), 6);
   EXPECT_EQ(inv_kin->getBaseLinkName(), base_link_name);
   EXPECT_EQ(inv_kin->getWorkingFrame(), base_link_name);
@@ -90,7 +71,7 @@ TEST(TesseractKinematicsUnit, OPWInvKinUnit)  // NOLINT
   // Check cloned
   InverseKinematics::Ptr inv_kin2 = inv_kin->clone();
   EXPECT_TRUE(inv_kin2 != nullptr);
-  EXPECT_EQ(inv_kin2->getSolverName(), OPW_INV_KIN_CHAIN_SOLVER_NAME);
+  EXPECT_EQ(inv_kin2->getSolverName(), IKFAST_INV_KIN_CHAIN_SOLVER_NAME);
   EXPECT_EQ(inv_kin2->numJoints(), 6);
   EXPECT_EQ(inv_kin2->getBaseLinkName(), base_link_name);
   EXPECT_EQ(inv_kin2->getWorkingFrame(), base_link_name);
