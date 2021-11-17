@@ -2,6 +2,9 @@
 Changelog for package tesseract_kinematics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.6.7 (2021-11-16)
+------------------
+
 0.6.6 (2021-11-10)
 ------------------
 * Update ikfast plugin
