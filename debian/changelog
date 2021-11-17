@@ -1,0 +1,67 @@
+ros-noetic-tesseract-geometry (0.6.7-1buster) buster; urgency=high
+
+
+
+ -- Levi Armstrong <Armstrong@todo.todo>  Tue, 16 Nov 2021 07:00:00 -0000
+
+ros-noetic-tesseract-geometry (0.6.6-1buster) buster; urgency=high
+
+
+
+ -- Levi Armstrong <Armstrong@todo.todo>  Wed, 10 Nov 2021 07:00:00 -0000
+
+ros-noetic-tesseract-geometry (0.5.0-1buster) buster; urgency=high
+
+
+
+ -- Levi Armstrong <Armstrong@todo.todo>  Fri, 02 Jul 2021 06:00:00 -0000
+
+ros-noetic-tesseract-geometry (0.4.1-1buster) buster; urgency=high
+
+
+
+ -- Levi Armstrong <Armstrong@todo.todo>  Sat, 24 Apr 2021 06:00:00 -0000
+
+ros-noetic-tesseract-geometry (0.4.0-1buster) buster; urgency=high
+
+  * No changes
+
+ -- Levi Armstrong <Armstrong@todo.todo>  Fri, 23 Apr 2021 06:00:00 -0000
+
+ros-noetic-tesseract-geometry (0.3.1-1buster) buster; urgency=high
+
+  * Move tesseract_variables() before any use of custom macros
+  * Contributors: Levi Armstrong
+
+ -- Levi Armstrong <Armstrong@todo.todo>  Wed, 14 Apr 2021 06:00:00 -0000
+
+ros-noetic-tesseract-geometry (0.3.0-1buster) buster; urgency=high
+
+  * Only enable code coverage if compiler definition is set
+  * Add cmake format
+  * Use boost targets, add cpack and license file (#572 <https://github.com/ros-industrial-consortium/tesseract/issues/572>)
+  * Fix the way in which Eigen is included (#570 <https://github.com/ros-industrial-consortium/tesseract/issues/570>)
+  * Contributors: Hervé Audren, Levi Armstrong
+
+ -- Levi Armstrong <Armstrong@todo.todo>  Fri, 09 Apr 2021 06:00:00 -0000
+
+ros-noetic-tesseract-geometry (0.2.0-1buster) buster; urgency=high
+
+  * Update cmake_common_scripts to ros_industrial_cmake_boilerplate
+  * Move all directories in tesseract directory up one level
+  * Contributors: Levi Armstrong
+
+ -- Levi Armstrong <Armstrong@todo.todo>  Wed, 17 Feb 2021 07:00:00 -0000
+
+ros-noetic-tesseract-geometry (0.1.0-1buster) buster; urgency=high
+
+  * Add missing include to tesseract_geometry/types.h
+  * Add asserts to mesh.h sdf_mesh.h to error if not triangle meshes
+  * Fix incorrect includes in cylinder.h and octree.h
+  * remove unused dependencies
+  * Add tesseract_geometry package and update tesseract_collision to leverage new package
+  * Contributors: Levi Armstrong
+
+ -- Levi Armstrong <Armstrong@todo.todo>  Thu, 31 Dec 2020 07:00:00 -0000
+
+
