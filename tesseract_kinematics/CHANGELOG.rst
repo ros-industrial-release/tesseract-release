@@ -2,6 +2,11 @@
 Changelog for package tesseract_kinematics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.6.8 (2021-11-29)
+------------------
+* Fix spelling errors
+* Contributors: Levi Armstrong
+
 0.6.7 (2021-11-16)
 ------------------
 
