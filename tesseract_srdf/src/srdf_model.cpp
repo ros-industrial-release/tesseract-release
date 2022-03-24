@@ -26,6 +26,8 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <boost/serialization/array.hpp>
+#include <boost/serialization/shared_ptr.hpp>
 #include <unordered_map>
 #include <vector>
 #include <utility>
@@ -42,7 +44,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_srdf/group_tool_center_points.h>
 #include <tesseract_srdf/disabled_collisions.h>
 #include <tesseract_srdf/collision_margins.h>
+#include <tesseract_srdf/configs.h>
 #include <tesseract_srdf/srdf_model.h>
+#include <tesseract_srdf/utils.h>
+#include <tesseract_common/serialization.h>
 #include <tesseract_common/utils.h>
 #include <tesseract_common/yaml_utils.h>
 
@@ -56,7 +61,7 @@ void SRDFModel::initFile(const tesseract_scene_graph::SceneGraph& scene_graph,
   tesseract_common::Resource::Ptr resource = locator.locateResource(filename);
   std::string xml_string;
   std::fstream xml_file(filename.c_str(), std::fstream::in);
-  if (xml_file.is_open())
+  if (xml_file.is_open() && resource)
   {
     while (xml_file.good())
     {
@@ -176,37 +181,7 @@ void SRDFModel::initString(const tesseract_scene_graph::SceneGraph& scene_graph,
          xml_element != nullptr;
          xml_element = xml_element->NextSiblingElement("kinematics_plugin_config"))
     {
-      std::string filename;
-      tinyxml2::XMLError status = tesseract_common::QueryStringAttributeRequired(xml_element, "filename", filename);
-      if (status != tinyxml2::XML_SUCCESS)
-        std::throw_with_nested(std::runtime_error("kinematics_plugin_config: Missing or failed to parse 'filename' "
-                                                  "attribute."));
-
-      tesseract_common::Resource::Ptr kin_plugin_resource = locator.locateResource(filename);
-      if (kin_plugin_resource == nullptr)
-        std::throw_with_nested(
-            std::runtime_error("kinematics_plugin_config: Failed to locate resource '" + filename + "'."));
-
-      tesseract_common::fs::path kin_plugin_file_path(kin_plugin_resource->getFilePath());
-      if (!tesseract_common::fs::exists(kin_plugin_file_path))
-        std::throw_with_nested(std::runtime_error("kinematics_plugin_config: Kinematics plugins file does not exist: "
-                                                  "'" +
-                                                  kin_plugin_file_path.string() + "'."));
-
-      YAML::Node config;
-      try
-      {
-        config = YAML::LoadFile(kin_plugin_file_path.string());
-      }
-      catch (...)
-      {
-        std::throw_with_nested(std::runtime_error("kinematics_plugin_config: YAML failed to parse kinematics plugins "
-                                                  "file '" +
-                                                  kin_plugin_file_path.string() + "'."));
-      }
-
-      const YAML::Node& kin_plugin_info = config[tesseract_common::KinematicsPluginInfo::CONFIG_KEY];
-      auto info = kin_plugin_info.as<tesseract_common::KinematicsPluginInfo>();
+      tesseract_common::KinematicsPluginInfo info = parseKinematicsPluginConfig(locator, xml_element, version);
       kinematics_information.kinematics_plugin_info.insert(info);
     }
   }
@@ -214,6 +189,21 @@ void SRDFModel::initString(const tesseract_scene_graph::SceneGraph& scene_graph,
   {
     std::throw_with_nested(
         std::runtime_error("SRDF: Error parsing srdf kinematics plugin config for robot '" + name + "'!"));
+  }
+
+  try
+  {
+    for (const tinyxml2::XMLElement* xml_element = srdf_xml->FirstChildElement("calibration_config");
+         xml_element != nullptr;
+         xml_element = xml_element->NextSiblingElement("calibration_config"))
+    {
+      tesseract_common::CalibrationInfo info = parseCalibrationConfig(scene_graph, locator, xml_element, version);
+      calibration_info.insert(info);
+    }
+  }
+  catch (...)
+  {
+    std::throw_with_nested(std::runtime_error("SRDF: Error parsing srdf calibration config for robot '" + name + "'!"));
   }
 
   try
@@ -242,40 +232,8 @@ void SRDFModel::initString(const tesseract_scene_graph::SceneGraph& scene_graph,
          xml_element != nullptr;
          xml_element = xml_element->NextSiblingElement("contact_managers_plugin_config"))
     {
-      std::string filename;
-      tinyxml2::XMLError status = tesseract_common::QueryStringAttributeRequired(xml_element, "filename", filename);
-      if (status != tinyxml2::XML_SUCCESS)
-        std::throw_with_nested(std::runtime_error("contact_managers_plugin_config: Missing or failed to parse "
-                                                  "'filename' "
-                                                  "attribute."));
-
-      tesseract_common::Resource::Ptr cm_plugin_resource = locator.locateResource(filename);
-      if (cm_plugin_resource == nullptr)
-        std::throw_with_nested(
-            std::runtime_error("contact_managers_plugin_config: Failed to locate resource '" + filename + "'."));
-
-      tesseract_common::fs::path cm_plugin_file_path(cm_plugin_resource->getFilePath());
-      if (!tesseract_common::fs::exists(cm_plugin_file_path))
-        std::throw_with_nested(std::runtime_error("contact_managers_plugin_config: Contact managers plugins file does "
-                                                  "not exist: "
-                                                  "'" +
-                                                  cm_plugin_file_path.string() + "'."));
-
-      YAML::Node config;
-      try
-      {
-        config = YAML::LoadFile(cm_plugin_file_path.string());
-      }
-      catch (...)
-      {
-        std::throw_with_nested(std::runtime_error("contact_managers_plugin_config: YAML failed to parse contact "
-                                                  "managers plugins "
-                                                  "file '" +
-                                                  cm_plugin_file_path.string() + "'."));
-      }
-
-      const YAML::Node& cm_plugin_info = config[tesseract_common::ContactManagersPluginInfo::CONFIG_KEY];
-      auto info = cm_plugin_info.as<tesseract_common::ContactManagersPluginInfo>();
+      tesseract_common::ContactManagersPluginInfo info =
+          parseContactManagersPluginConfig(locator, xml_element, version);
       contact_managers_plugin_info.insert(info);
     }
   }
@@ -391,12 +349,27 @@ bool SRDFModel::saveToFile(const std::string& file_path) const
     xml_root->InsertEndChild(xml_kin_plugin_entry);
   }
 
-  for (const auto& entry : acm.getAllAllowedCollisions())
+  if (!calibration_info.empty())
+  {
+    tesseract_common::fs::path p(file_path);
+    std::ofstream fout(p.parent_path().append("calibration_config.yaml").string());
+    YAML::Node config;
+    config[tesseract_common::CalibrationInfo::CONFIG_KEY] = calibration_info;
+    fout << config;
+    tinyxml2::XMLElement* xml_cal_info_entry = doc.NewElement("calibration_config");
+    xml_cal_info_entry->SetAttribute("filename", "calibration_config.yaml");
+    xml_root->InsertEndChild(xml_cal_info_entry);
+  }
+
+  // Write the ACM
+  const auto allowed_collision_entries = acm.getAllAllowedCollisions();
+  auto acm_keys = getAlphabeticalACMKeys(allowed_collision_entries);
+  for (const auto& key : acm_keys)
   {
     tinyxml2::XMLElement* xml_acm_entry = doc.NewElement("disable_collisions");
-    xml_acm_entry->SetAttribute("link1", entry.first.first.c_str());
-    xml_acm_entry->SetAttribute("link2", entry.first.second.c_str());
-    xml_acm_entry->SetAttribute("reason", entry.second.c_str());
+    xml_acm_entry->SetAttribute("link1", key.get().first.c_str());
+    xml_acm_entry->SetAttribute("link2", key.get().second.c_str());
+    xml_acm_entry->SetAttribute("reason", allowed_collision_entries.at(key.get()).c_str());
     xml_root->InsertEndChild(xml_acm_entry);
   }
 
@@ -449,4 +422,35 @@ void SRDFModel::clear()
   collision_margin_data = nullptr;
 }
 
+bool SRDFModel::operator==(const SRDFModel& rhs) const
+{
+  bool equal = true;
+  equal &= name == rhs.name;
+  equal &= tesseract_common::isIdenticalArray<int, 3>(version, rhs.version);
+  equal &= kinematics_information == rhs.kinematics_information;
+  equal &= contact_managers_plugin_info == rhs.contact_managers_plugin_info;
+  equal &= acm == rhs.acm;
+  equal &= tesseract_common::pointersEqual(collision_margin_data, rhs.collision_margin_data);
+  equal &= calibration_info == rhs.calibration_info;
+
+  return equal;
+}
+bool SRDFModel::operator!=(const SRDFModel& rhs) const { return !operator==(rhs); }
+
+template <class Archive>
+void SRDFModel::serialize(Archive& ar, const unsigned int /*version*/)
+{
+  ar& BOOST_SERIALIZATION_NVP(name);
+  ar& BOOST_SERIALIZATION_NVP(version);
+  ar& BOOST_SERIALIZATION_NVP(kinematics_information);
+  ar& BOOST_SERIALIZATION_NVP(contact_managers_plugin_info);
+  ar& BOOST_SERIALIZATION_NVP(acm);
+  ar& BOOST_SERIALIZATION_NVP(collision_margin_data);
+  ar& BOOST_SERIALIZATION_NVP(calibration_info);
+}
+
+#include <tesseract_common/serialization.h>
+TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_srdf::SRDFModel)
+// This causes build failures for some reason, but it seems to work without it
+// BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_srdf::SRDFModel)
 }  // namespace tesseract_srdf
