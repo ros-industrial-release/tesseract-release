@@ -41,7 +41,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/types.h>
 
 #ifdef SWIG
-%shared_ptr(tesseract_state_solver::StateSolver)
+%shared_ptr(tesseract_scene_graph::StateSolver)
+%wrap_unique_ptr(StateSolverUPtr,tesseract_scene_graph::StateSolver)
 #endif  // SWIG
 
 namespace tesseract_scene_graph
@@ -193,6 +194,28 @@ public:
    * @return True if it exists, otherwise false
    */
   virtual bool hasLinkName(const std::string& link_name) const = 0;
+
+  /**
+   * @brief Get all of the links transforms
+   * @details Order should be the same as getLinkNames()
+   * @return Get a vector of transforms for all links.
+   */
+  virtual tesseract_common::VectorIsometry3d getLinkTransforms() const = 0;
+
+  /**
+   * @brief Get the transform corresponding to the link.
+   * @return Transform and is identity when no transform is available.
+   */
+  virtual Eigen::Isometry3d getLinkTransform(const std::string& link_name) const = 0;
+
+  /**
+   * @brief Get transform between two links using the current state
+   * @param from_link_name The link name the transform should be relative to
+   * @param to_link_name The link name to get transform
+   * @return The relative transform = inv(Transform(from_link_name)) * Transform(to_link_name)
+   */
+  virtual Eigen::Isometry3d getRelativeLinkTransform(const std::string& from_link_name,
+                                                     const std::string& to_link_name) const = 0;
 
   /**
    * @brief Getter for kinematic limits
