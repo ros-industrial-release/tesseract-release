@@ -9,7 +9,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/utils.h>
 #include <tesseract_common/sfinae_utils.h>
 #include <tesseract_common/resource_locator.h>
-#include <tesseract_common/serialization.h>
+#include <tesseract_common/eigen_serialization.h>
 #include <tesseract_common/manipulator_info.h>
 #include <tesseract_common/joint_state.h>
 #include <tesseract_common/types.h>
@@ -717,6 +717,141 @@ TEST(TesseractCommonUnit, isIdenticalUnit)  // NOLINT
   v2 = { "a", "b", "d" };
   EXPECT_FALSE(tesseract_common::isIdentical(v1, v2, false));
   EXPECT_FALSE(tesseract_common::isIdentical(v1, v2, true));
+}
+
+TEST(TesseractCommonUnit, isIdenticalMapUnit)  // NOLINT
+{
+  std::map<std::string, int> v1;
+  v1["1"] = 1;
+  v1["2"] = 2;
+  std::map<std::string, int> v2;
+  bool equal = tesseract_common::isIdenticalMap<std::map<std::string, int>, int>(v1, v2);
+  EXPECT_FALSE(equal);
+
+  v2["2"] = 2;
+  equal = tesseract_common::isIdenticalMap<std::map<std::string, int>, int>(v1, v2);
+  EXPECT_FALSE(equal);
+
+  v2 = v1;
+  equal = tesseract_common::isIdenticalMap<std::map<std::string, int>, int>(v1, v2);
+  EXPECT_TRUE(equal);
+
+  v1.clear();
+  equal = tesseract_common::isIdenticalMap<std::map<std::string, int>, int>(v1, v2);
+  EXPECT_FALSE(equal);
+}
+
+TEST(TesseractCommonUnit, isIdenticalSetUnit)  // NOLINT
+{
+  std::set<int> v1;
+  std::set<int> v2;
+  bool equal = tesseract_common::isIdenticalSet<int>(v1, v2);
+  EXPECT_TRUE(equal);
+
+  v1.insert(1);
+  equal = tesseract_common::isIdenticalSet<int>(v1, v2);
+  EXPECT_FALSE(equal);
+
+  v2.insert(1);
+  v2.insert(2);
+  equal = tesseract_common::isIdenticalSet<int>(v1, v2);
+  EXPECT_FALSE(equal);
+
+  v1.insert(2);
+  equal = tesseract_common::isIdenticalSet<int>(v1, v2);
+  EXPECT_TRUE(equal);
+}
+
+TEST(TesseractCommonUnit, isIdenticalArrayUnit)  // NOLINT
+{
+  {
+    std::array<int, 4> v1 = { 1, 2, 3, 4 };
+    std::array<int, 4> v2 = { 1, 2, 3, 4 };
+    bool equal = tesseract_common::isIdenticalArray<int, 4>(v1, v2);
+    EXPECT_TRUE(equal);
+  }
+  {
+    std::array<int, 4> v1 = { 1, 2, 3, 4 };
+    std::array<int, 4> v2 = { -1, 2, 3, 4 };
+    bool equal = tesseract_common::isIdenticalArray<int, 4>(v1, v2);
+    EXPECT_FALSE(equal);
+  }
+  {
+    // Clang-tidy catches unitialized arrays anyway, but check it just in case the caller isn't running clang-tidy
+    std::array<int, 4> v1 = { 1, 2, 3, 4 };
+    std::array<int, 4> v2;  // NOLINT
+    bool equal = tesseract_common::isIdenticalArray<int, 4>(v1, v2);
+    EXPECT_FALSE(equal);
+  }
+}
+
+TEST(TesseractCommonUnit, pointersEqual)  // NOLINT
+{
+  {
+    auto p1 = std::make_shared<int>(1);
+    auto p2 = std::make_shared<int>(2);
+    bool equal = tesseract_common::pointersEqual(p1, p2);
+    EXPECT_FALSE(equal);
+  }
+  {
+    auto p1 = std::make_shared<int>(1);
+    auto p2 = nullptr;
+    bool equal = tesseract_common::pointersEqual<int>(p1, p2);
+    EXPECT_FALSE(equal);
+  }
+  {
+    auto p1 = nullptr;
+    auto p2 = std::make_shared<int>(2);
+    bool equal = tesseract_common::pointersEqual<int>(p1, p2);
+    EXPECT_FALSE(equal);
+  }
+  {
+    auto p1 = nullptr;
+    auto p2 = nullptr;
+    bool equal = tesseract_common::pointersEqual<int>(p1, p2);
+    EXPECT_TRUE(equal);
+  }
+  {
+    auto p1 = std::make_shared<int>(1);
+    auto p2 = std::make_shared<int>(1);
+    bool equal = tesseract_common::pointersEqual<int>(p1, p2);
+    EXPECT_TRUE(equal);
+  }
+}
+
+TEST(TesseractCommonUnit, pointersComparison)  // NOLINT
+{
+  // True if p1 < p2
+  {
+    auto p1 = std::make_shared<int>(1);
+    auto p2 = std::make_shared<int>(2);
+    bool equal = tesseract_common::pointersComparison<int>(p1, p2);
+    EXPECT_TRUE(equal);
+  }
+  {
+    auto p1 = std::make_shared<int>(1);
+    auto p2 = nullptr;
+    bool equal = tesseract_common::pointersComparison<int>(p1, p2);
+    EXPECT_FALSE(equal);
+  }
+  {
+    auto p1 = nullptr;
+    auto p2 = std::make_shared<int>(2);
+    bool equal = tesseract_common::pointersComparison<int>(p1, p2);
+    EXPECT_TRUE(equal);
+  }
+  {
+    auto p1 = nullptr;
+    auto p2 = nullptr;
+    bool equal = tesseract_common::pointersComparison<int>(p1, p2);
+    EXPECT_FALSE(equal);
+  }
+  {
+    auto p1 = std::make_shared<int>(1);
+    auto p2 = std::make_shared<int>(1);
+    bool equal = tesseract_common::pointersComparison<int>(p1, p2);
+    EXPECT_FALSE(equal);
+  }
 }
 
 TEST(TesseractCommonUnit, getTimestampStringUnit)  // NOLINT
@@ -1555,6 +1690,111 @@ TEST(TesseractContactManagersFactoryUnit, ContactManagersPluginInfoYamlUnit)  //
     YAML::Node config = plugin_config[tesseract_common::ContactManagersPluginInfo::CONFIG_KEY];
     EXPECT_ANY_THROW(config.as<tesseract_common::ContactManagersPluginInfo>());  // NOLINT
   }
+}
+
+TEST(TesseractCommonUnit, TransformMapYamlUnit)  // NOLINT
+{
+  std::string yaml_string =
+      R"(joints:
+           joint_1:
+             position:
+               x: 1
+               y: 2
+               z: 3
+             orientation:
+               x: 0
+               y: 0
+               z: 0
+               w: 1
+           joint_2:
+             position:
+               x: 4
+               y: 5
+               z: 6
+             orientation:
+               x: 0
+               y: 0
+               z: 0
+               w: 1)";
+
+  {  // valid string
+    YAML::Node node = YAML::Load(yaml_string);
+    auto trans_map = node["joints"].as<tesseract_common::TransformMap>();
+    EXPECT_EQ(trans_map.size(), 2);
+    EXPECT_FALSE(trans_map.empty());
+    EXPECT_TRUE(trans_map.find("joint_1") != trans_map.end());
+    EXPECT_TRUE(trans_map.find("joint_2") != trans_map.end());
+  }
+
+  std::string bad_yaml_string =
+      R"(joints:
+           - joint_1:
+               position:
+                 x: 1
+                 y: 2
+                 z: 3
+               orientation:
+                 x: 0
+                 y: 0
+                 z: 0
+                 w: 1
+           - joint_2:
+               position:
+                 x: 4
+                 y: 5
+                 z: 6
+               orientation:
+                 x: 0
+                 y: 0
+                 z: 0
+                 w: 1)";
+  {  // invalid string
+    YAML::Node node = YAML::Load(bad_yaml_string);
+    EXPECT_ANY_THROW(node["joints"].as<tesseract_common::TransformMap>());  // NOLINT
+  }
+}
+
+TEST(TesseractCommonUnit, CalibrationInfoYamlUnit)  // NOLINT
+{
+  std::string yaml_string =
+      R"(calibration:
+           joints:
+             joint_1:
+               position:
+                 x: 1
+                 y: 2
+                 z: 3
+               orientation:
+                 x: 0
+                 y: 0
+                 z: 0
+                 w: 1
+             joint_2:
+               position:
+                 x: 4
+                 y: 5
+                 z: 6
+               orientation:
+                 x: 0
+                 y: 0
+                 z: 0
+                 w: 1)";
+
+  YAML::Node node = YAML::Load(yaml_string);
+  auto cal_info = node[tesseract_common::CalibrationInfo::CONFIG_KEY].as<tesseract_common::CalibrationInfo>();
+  EXPECT_FALSE(cal_info.empty());
+  EXPECT_TRUE(cal_info.joints.find("joint_1") != cal_info.joints.end());
+  EXPECT_TRUE(cal_info.joints.find("joint_2") != cal_info.joints.end());
+
+  tesseract_common::CalibrationInfo cal_insert;
+  EXPECT_TRUE(cal_insert.empty());
+  cal_insert.insert(cal_info);
+  EXPECT_FALSE(cal_insert.empty());
+  EXPECT_TRUE(cal_insert.joints.find("joint_1") != cal_insert.joints.end());
+  EXPECT_TRUE(cal_insert.joints.find("joint_2") != cal_insert.joints.end());
+
+  cal_info.clear();
+  EXPECT_TRUE(cal_info.empty());
 }
 
 TEST(TesseractCommonUnit, linkNamesPairUnit)  // NOLINT

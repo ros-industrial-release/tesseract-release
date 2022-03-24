@@ -37,6 +37,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_state_solver/state_solver.h>
 #include <tesseract_scene_graph/kdl_parser.h>
 
+#ifdef SWIG
+%shared_ptr(tesseract_scene_graph::KDLStateSolver)
+#endif  // SWIG
+
 namespace tesseract_scene_graph
 {
 class KDLStateSolver : public StateSolver
@@ -44,6 +48,8 @@ class KDLStateSolver : public StateSolver
 public:
   using Ptr = std::shared_ptr<KDLStateSolver>;
   using ConstPtr = std::shared_ptr<const KDLStateSolver>;
+  using UPtr = std::unique_ptr<KDLStateSolver>;
+  using ConstUPtr = std::unique_ptr<const KDLStateSolver>;
 
   KDLStateSolver(const tesseract_scene_graph::SceneGraph& scene_graph);
   KDLStateSolver(const tesseract_scene_graph::SceneGraph& scene_graph, KDLTreeData data);
@@ -93,6 +99,13 @@ public:
   bool isActiveLinkName(const std::string& link_name) const override final;
 
   bool hasLinkName(const std::string& link_name) const override final;
+
+  tesseract_common::VectorIsometry3d getLinkTransforms() const override final;
+
+  Eigen::Isometry3d getLinkTransform(const std::string& link_name) const override final;
+
+  Eigen::Isometry3d getRelativeLinkTransform(const std::string& from_link_name,
+                                             const std::string& to_link_name) const override final;
 
   tesseract_common::KinematicLimits getLimits() const override final;
 
