@@ -29,6 +29,7 @@
 #include <tesseract_collision/core/common.h>
 #include <tesseract_srdf/utils.h>
 #include <tesseract_state_solver/ofkt/ofkt_state_solver.h>
+#include <tesseract_kinematics/core/validate.h>
 
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <queue>
@@ -256,6 +257,10 @@ Commands Environment::getInitCommands(const tesseract_scene_graph::SceneGraph& s
     commands.push_back(std::make_shared<AddContactManagersPluginInfoCommand>(srdf_model->contact_managers_plugin_info));
     commands.push_back(std::make_shared<AddKinematicsInformationCommand>(srdf_model->kinematics_information));
 
+    // Apply calibration information
+    for (const auto& cal : srdf_model->calibration_info.joints)
+      commands.push_back(std::make_shared<ChangeJointOriginCommand>(cal.first, cal.second));
+
     // Check srdf for collision margin data
     if (srdf_model->collision_margin_data)
       commands.push_back(std::make_shared<ChangeCollisionMarginsCommand>(
@@ -372,14 +377,17 @@ tesseract_kinematics::KinematicGroup::UPtr Environment::getKinematicGroup(const 
   std::shared_lock<std::shared_mutex> lock(mutex_);
 
   std::unique_lock<std::shared_mutex> cache_lock(kinematic_group_cache_mutex_);
-  auto it = kinematic_group_cache_.find(group_name);
+  std::pair<std::string, std::string> key = std::make_pair(group_name, ik_solver_name);
+  auto it = kinematic_group_cache_.find(key);
   if (it != kinematic_group_cache_.end())
   {
-    CONSOLE_BRIDGE_logDebug("Environment, getKinematicGroup(%s) cache hit!", group_name.c_str());
+    CONSOLE_BRIDGE_logDebug(
+        "Environment, getKinematicGroup(%s, %s) cache hit!", group_name.c_str(), ik_solver_name.c_str());
     return std::make_unique<tesseract_kinematics::KinematicGroup>(*it->second);
   }
 
-  CONSOLE_BRIDGE_logDebug("Environment, getKinematicGroup(%s) cache miss!", group_name.c_str());
+  CONSOLE_BRIDGE_logDebug(
+      "Environment, getKinematicGroup(%s, %s) cache miss!", group_name.c_str(), ik_solver_name.c_str());
   std::vector<std::string> joint_names = getGroupJointNames(group_name);
 
   if (ik_solver_name.empty())
@@ -396,7 +404,15 @@ tesseract_kinematics::KinematicGroup::UPtr Environment::getKinematicGroup(const 
   auto kg = std::make_unique<tesseract_kinematics::KinematicGroup>(
       group_name, joint_names, std::move(inv_kin), *scene_graph_const_, current_state_);
 
-  kinematic_group_cache_[group_name] = std::make_unique<tesseract_kinematics::KinematicGroup>(*kg);
+  kinematic_group_cache_[key] = std::make_unique<tesseract_kinematics::KinematicGroup>(*kg);
+
+#ifndef NDEBUG
+  if (!tesseract_kinematics::checkKinematics(*kg))
+  {
+    CONSOLE_BRIDGE_logError("Check Kinematics failed. This means that inverse kinematics solution for a pose do not "
+                            "match forward kinematics solution. Did you change the URDF recently?");
+  }
+#endif
 
   return kg;
 }
@@ -538,7 +554,7 @@ bool Environment::getLinkVisibility(const std::string& name) const
   return scene_graph_->getLinkVisibility(name);
 }
 
-tesseract_scene_graph::AllowedCollisionMatrix::ConstPtr Environment::getAllowedCollisionMatrix() const
+tesseract_common::AllowedCollisionMatrix::ConstPtr Environment::getAllowedCollisionMatrix() const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
   return scene_graph_->getAllowedCollisionMatrix();
@@ -638,18 +654,20 @@ std::vector<std::string> Environment::getStaticLinkNames(const std::vector<std::
 tesseract_common::VectorIsometry3d Environment::getLinkTransforms() const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
-  tesseract_common::VectorIsometry3d link_tfs;
-  link_tfs.reserve(current_state_.link_transforms.size());
-  for (const auto& link_name : state_solver_->getLinkNames())
-    link_tfs.push_back(current_state_.link_transforms.at(link_name));
-
-  return link_tfs;
+  return state_solver_->getLinkTransforms();
 }
 
 Eigen::Isometry3d Environment::getLinkTransform(const std::string& link_name) const
 {
   std::shared_lock<std::shared_mutex> lock(mutex_);
-  return current_state_.link_transforms.at(link_name);
+  return state_solver_->getLinkTransform(link_name);
+}
+
+Eigen::Isometry3d Environment::getRelativeLinkTransform(const std::string& from_link_name,
+                                                        const std::string& to_link_name) const
+{
+  std::shared_lock<std::shared_mutex> lock(mutex_);
+  return state_solver_->getRelativeLinkTransform(from_link_name, to_link_name);
 }
 
 tesseract_scene_graph::StateSolver::UPtr Environment::getStateSolver() const
@@ -877,6 +895,13 @@ void Environment::currentStateChanged()
       }
     }
   }
+
+  {  // Clear JointGroup and KinematicGroup
+    std::unique_lock<std::shared_mutex> jg_lock(joint_group_cache_mutex_);
+    std::unique_lock<std::shared_mutex> kg_lock(kinematic_group_cache_mutex_);
+    joint_group_cache_.clear();
+    kinematic_group_cache_.clear();
+  }
 }
 
 void Environment::environmentChanged()
@@ -889,10 +914,6 @@ void Environment::environmentChanged()
 
   {  // Clear JointGroup, KinematicGroup and GroupJointNames cache
     std::unique_lock<std::shared_mutex> jn_lock(group_joint_names_cache_mutex_);
-    std::unique_lock<std::shared_mutex> jg_lock(joint_group_cache_mutex_);
-    std::unique_lock<std::shared_mutex> kg_lock(kinematic_group_cache_mutex_);
-    joint_group_cache_.clear();
-    kinematic_group_cache_.clear();
     group_joint_names_cache_.clear();
   }
 
@@ -966,7 +987,6 @@ Environment::UPtr Environment::clone() const
   for (const auto& c : joint_group_cache_)
     cloned_env->joint_group_cache_[c.first] = (std::make_unique<tesseract_kinematics::JointGroup>(*c.second));
 
-  cloned_env->kinematic_group_cache_.reserve(kinematic_group_cache_.size());
   for (const auto& c : kinematic_group_cache_)
     cloned_env->kinematic_group_cache_[c.first] = (std::make_unique<tesseract_kinematics::KinematicGroup>(*c.second));
 

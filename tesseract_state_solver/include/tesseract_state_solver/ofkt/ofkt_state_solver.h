@@ -42,6 +42,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_state_solver/mutable_state_solver.h>
 #include <tesseract_state_solver/ofkt/ofkt_node.h>
 
+#ifdef SWIG
+%shared_ptr(tesseract_scene_graph::OFKTStateSolver)
+#endif  // SWIG
+
 namespace tesseract_scene_graph
 {
 /**
@@ -60,6 +64,8 @@ public:
 
   using Ptr = std::shared_ptr<OFKTStateSolver>;
   using ConstPtr = std::shared_ptr<const OFKTStateSolver>;
+  using UPtr = std::unique_ptr<OFKTStateSolver>;
+  using ConstUPtr = std::unique_ptr<const OFKTStateSolver>;
 
   OFKTStateSolver(const tesseract_scene_graph::SceneGraph& scene_graph, const std::string& prefix = "");
   OFKTStateSolver(const std::string& root_name);
@@ -111,6 +117,13 @@ public:
   bool isActiveLinkName(const std::string& link_name) const override final;
 
   bool hasLinkName(const std::string& link_name) const override final;
+
+  tesseract_common::VectorIsometry3d getLinkTransforms() const override final;
+
+  Eigen::Isometry3d getLinkTransform(const std::string& link_name) const override final;
+
+  Eigen::Isometry3d getRelativeLinkTransform(const std::string& from_link_name,
+                                             const std::string& to_link_name) const override final;
 
   tesseract_common::KinematicLimits getLimits() const override final;
 
