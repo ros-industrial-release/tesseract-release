@@ -33,6 +33,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/graph/properties.hpp>
 #include <boost/graph/depth_first_search.hpp>
 #include <boost/graph/breadth_first_search.hpp>
+#include <boost/serialization/access.hpp>
 #include <string>
 #include <list>
 #include <unordered_map>
@@ -40,11 +41,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/link.h>
 #include <tesseract_scene_graph/joint.h>
-#include <tesseract_scene_graph/allowed_collision_matrix.h>
+#include <tesseract_common/allowed_collision_matrix.h>
 
 #ifdef SWIG
 
 %shared_ptr(tesseract_scene_graph::SceneGraph)
+%wrap_unique_ptr(SceneGraphUPtr,tesseract_scene_graph::SceneGraph)
 %template(LinkVector) std::vector<std::shared_ptr<tesseract_scene_graph::Link> >;
 %template(JointVector) std::vector<std::shared_ptr<tesseract_scene_graph::Joint> >;
 %template(LinkConstVector) std::vector<std::shared_ptr<tesseract_scene_graph::Link const> >;
@@ -392,13 +394,13 @@ public:
    * @brief Get the allowed collision matrix
    * @return AllowedCollisionMatrixConstPtr
    */
-  AllowedCollisionMatrix::ConstPtr getAllowedCollisionMatrix() const;
+  tesseract_common::AllowedCollisionMatrix::ConstPtr getAllowedCollisionMatrix() const;
 
   /**
    * @brief Get the allowed collision matrix
    * @return AllowedCollisionMatrixPtr
    */
-  AllowedCollisionMatrix::Ptr getAllowedCollisionMatrix();
+  tesseract_common::AllowedCollisionMatrix::Ptr getAllowedCollisionMatrix();
 
   /**
    * @brief Get the source link (parent link) for a joint
@@ -553,6 +555,9 @@ public:
                         const tesseract_scene_graph::Joint& joint,
                         const std::string& prefix = "");
 
+  bool operator==(const SceneGraph& rhs) const;
+  bool operator!=(const SceneGraph& rhs) const;
+
 protected:
   /**
    * @brief Adds a link to the graph
@@ -576,7 +581,7 @@ protected:
 private:
   std::unordered_map<std::string, std::pair<Link::Ptr, Vertex>> link_map_;
   std::unordered_map<std::string, std::pair<Joint::Ptr, Edge>> joint_map_;
-  AllowedCollisionMatrix::Ptr acm_;
+  tesseract_common::AllowedCollisionMatrix::Ptr acm_;
 
   struct cycle_detector : public boost::dfs_visitor<>
   {
@@ -721,6 +726,16 @@ private:
 
     return child_link_names;
   }
+
+  friend class boost::serialization::access;
+  template <class Archive>
+  void save(Archive& ar, const unsigned int version) const;  // NOLINT
+
+  template <class Archive>
+  void load(Archive& ar, const unsigned int version);  // NOLINT
+
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
 inline std::ostream& operator<<(std::ostream& os, const ShortestPath& path)
@@ -740,5 +755,9 @@ inline std::ostream& operator<<(std::ostream& os, const ShortestPath& path)
 }
 
 }  // namespace tesseract_scene_graph
+
+#include <boost/serialization/export.hpp>
+#include <boost/serialization/tracking.hpp>
+BOOST_CLASS_EXPORT_KEY2(tesseract_scene_graph::SceneGraph, "SceneGraph")
 
 #endif  // TESSERACT_SCENE_GRAPH_GRAPH_H
