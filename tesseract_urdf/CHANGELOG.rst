@@ -2,6 +2,57 @@
 Changelog for package tesseract_urdf
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.8.5 (2022-03-24)
+------------------
+
+0.8.4 (2022-03-03)
+------------------
+* cmake format
+* Add TESSERACT_ENABLE_EXAMPLES compile option
+* Contributors: John Wason
+
+0.8.3 (2022-02-22)
+------------------
+* Fix Boost_VERSION in tesseract_urdf to check for Boost_VERSION_MACRO (`#717 <https://github.com/tesseract-robotics/tesseract/issues/717>`_)
+  * Fix Boost_VERSION in tesseract_urdf to check for Boost_VERSION_MACRO
+  * cmake-format
+* Modifying Boost_VERSION check to use semver
+* Contributors: John Wason, Kyle Staub
+
+0.8.2 (2022-01-27)
+------------------
+
+0.8.1 (2022-01-24)
+------------------
+
+0.8.0 (2022-01-19)
+------------------
+
+0.7.5 (2022-01-10)
+------------------
+* Add creation method to convex mesh
+* URDF Writer: Small Bug Fixes
+* Contributors: David Merz, Jr, Levi Armstrong
+
+0.7.4 (2021-12-15)
+------------------
+
+0.7.3 (2021-12-15)
+------------------
+
+0.7.2 (2021-12-15)
+------------------
+
+0.7.1 (2021-12-15)
+------------------
+* Improve creating octree from point cloud using lazy_eval (`#680 <https://github.com/tesseract-robotics/tesseract/issues/680>`_)
+* Contributors: Levi Armstrong
+
+0.7.0 (2021-12-04)
+------------------
+* Move AllowedCollisionMatrix into tesseract_common
+* Contributors: Matthew Powelson
+
 0.6.9 (2021-11-29)
 ------------------
 

@@ -37,6 +37,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #ifdef SWIG
 %shared_ptr(tesseract_collision::ContinuousContactManager)
+%wrap_unique_ptr(ContinuousContactManagerUPtr,tesseract_collision::ContinuousContactManager)
+
 #endif  // SWIG
 
 namespace tesseract_collision
@@ -135,6 +137,13 @@ public:
    * @param name The name of the object
    */
   virtual bool disableCollisionObject(const std::string& name) = 0;
+
+  /**
+   * @brief Check if collision object is enabled
+   * @param name The name of the object
+   * @return True if enabled, otherwise false
+   */
+  virtual bool isCollisionObjectEnabled(const std::string& name) const = 0;
 
   /**
    * @brief Set a single static collision object's tansforms
@@ -262,6 +271,12 @@ public:
    * @param type The type of contact test
    */
   virtual void contactTest(ContactResultMap& collisions, const ContactRequest& request) = 0;
+
+  /**
+   * @brief Applies settings in the config
+   * @param config Settings to be applies
+   */
+  virtual void applyContactManagerConfig(const ContactManagerConfig& config);
 };
 
 }  // namespace tesseract_collision
