@@ -28,6 +28,7 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <array>
 #include <vector>
 #include <string>
 #include <sstream>
@@ -39,6 +40,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <tinyxml2.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
+#include <tesseract_common/allowed_collision_matrix.h>
 #include <tesseract_common/types.h>
 
 namespace tesseract_common
@@ -48,6 +50,7 @@ namespace tesseract_common
 static std::mt19937 mersenne{ static_cast<std::mt19937::result_type>(std::time(nullptr)) };
 #else
 /** @brief Random number generator */
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 inline std::mt19937 mersenne{ static_cast<std::mt19937::result_type>(std::time(nullptr)) };
 #endif
 
@@ -199,20 +202,138 @@ void trim(std::string& s);
  * @param vec1 Vector strings
  * @param vec2 Vector strings
  * @param ordered If true order is relavent, othwise if false order is not relavent
+ * @param equal_pred Binary predicate passed into std::equals to determine if an element is equal. Useful for vectors of
+ * pointers
+ * @param comp Binary function passed into std::sort. Only used it ordered == false. Useful for vectors of pointers
  */
 template <typename T>
-bool isIdentical(const std::vector<T>& vec1, const std::vector<T>& vec2, bool ordered = true)
+bool isIdentical(
+    const std::vector<T>& vec1,
+    const std::vector<T>& vec2,
+    bool ordered = true,
+    const std::function<bool(const T&, const T&)>& equal_pred = [](const T& v1, const T& v2) { return v1 == v2; },
+    const std::function<bool(const T&, const T&)>& comp = [](const T& v1, const T& v2) { return v1 < v2; })
 {
+  if (vec1.size() != vec2.size())
+    return false;
+
   if (ordered)
-    return std::equal(vec1.begin(), vec1.end(), vec2.begin());
+    return std::equal(vec1.begin(), vec1.end(), vec2.begin(), equal_pred);
 
   std::vector<T> v1 = vec1;
   std::vector<T> v2 = vec2;
-  std::sort(v1.begin(), v1.end());
-  std::sort(v2.begin(), v2.end());
-  return std::equal(v1.begin(), v1.end(), v2.begin());
+  std::sort(v1.begin(), v1.end(), comp);
+  std::sort(v2.begin(), v2.end(), comp);
+  return std::equal(v1.begin(), v1.end(), v2.begin(), equal_pred);
 }
 
+/**
+ * @brief Checks if 2 maps are identical
+ * @param map_1 First map
+ * @param map_2 Second map
+ * @return True if they are identical
+ */
+template <typename KeyValueContainerType, typename ValueType>
+bool isIdenticalMap(
+    const KeyValueContainerType& map_1,
+    const KeyValueContainerType& map_2,
+    const std::function<bool(const ValueType&, const ValueType&)>& value_eq =
+        [](const ValueType& v1, const ValueType& v2) { return v1 == v2; })
+{
+  if (map_1.size() != map_2.size())
+    return false;
+
+  for (const auto& entry : map_1)
+  {
+    // Check if the key exists
+    const auto cp = map_2.find(entry.first);
+    if (cp == map_2.end())
+      return false;
+    // Check if the value is the same
+    if (!value_eq(cp->second, entry.second))
+      return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Checks if 2 sets are identical
+ * @param map_1 First map
+ * @param map_2 Second map
+ * @return True if they are identical
+ */
+template <typename ValueType>
+bool isIdenticalSet(
+    const std::set<ValueType>& set_1,
+    const std::set<ValueType>& set_2,
+    const std::function<bool(const ValueType&, const ValueType&)>& value_eq =
+        [](const ValueType& v1, const ValueType& v2) { return v1 == v2; })
+{
+  if (set_1.size() != set_2.size())
+    return false;
+
+  for (const auto& entry : set_1)
+  {
+    // Check if the key exists
+    const auto cp = set_2.find(entry);
+    if (cp == set_2.end())
+      return false;
+    // Check if the value is the same
+    if (!value_eq(*cp, entry))
+      return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Checks if 2 arrays are identical
+ * @param array_1 First array
+ * @param array_2 Second array
+ * @return True if they are identical
+ */
+template <typename ValueType, std::size_t Size>
+bool isIdenticalArray(
+    const std::array<ValueType, Size>& array_1,
+    const std::array<ValueType, Size>& array_2,
+    const std::function<bool(const ValueType&, const ValueType&)>& value_eq =
+        [](const ValueType& v1, const ValueType& v2) { return v1 == v2; })
+{
+  if (array_1.size() != array_2.size())
+    return false;
+
+  for (std::size_t idx = 0; idx < array_1.size(); idx++)
+  {
+    if (!value_eq(array_1[idx], array_2[idx]))
+      return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Checks if 2 pointers point to objects that are ==
+ * @param p1 First pointer
+ * @param p2 Second pointer
+ * @return True if the objects are == or both pointers are nullptr
+ */
+template <typename T>
+bool pointersEqual(const std::shared_ptr<T>& p1, const std::shared_ptr<T>& p2)
+{
+  return (p1 && p2 && *p1 == *p2) || (!p1 && !p2);
+}
+/**
+ * @brief Comparison operator for the objects 2 points point to
+ * @param p1 First pointer
+ * @param p2 Second pointer
+ * @return True if *p1 < *p2 and neither is nullptr. Non-nullptr is considered > than nullptr
+ */
+template <typename T>
+bool pointersComparison(const std::shared_ptr<T>& p1, const std::shared_ptr<T>& p2)
+{
+  if (p1 && p2)
+    return *p1 < *p2;
+  // If p2 is !nullptr then return true. p1 or both are nullptr should be false
+  return p2 != nullptr;
+}
 /**
  * @brief Get Timestamp string
  * @return Timestamp string
@@ -373,6 +494,17 @@ bool toNumeric(const std::string& s, FloatType& value)
   value = out;
   return true;
 }
+
+/**
+ * @brief Gets allowed collisions for a set of link names.
+ * @param link_names Vector of link names for which we want the allowed collisions
+ * @param acm_entries Entries in the ACM. Get this with AllowedCollisionMatrix::getAllAllowedCollisions()
+ * @param remove_duplicates If true, duplicates will be removed. Default: true
+ * @return vector of links that are allowed to collide with links given
+ */
+std::vector<std::string> getAllowedCollisions(const std::vector<std::string>& link_names,
+                                              const AllowedCollisionEntries& acm_entries,
+                                              bool remove_duplicates = true);
 
 }  // namespace tesseract_common
 #endif  // TESSERACT_COMMON_UTILS_H
