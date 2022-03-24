@@ -29,6 +29,7 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <boost/serialization/access.hpp>
 #include <string>
 #include <memory>
 #include <array>
@@ -37,7 +38,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_srdf/kinematics_information.h>
 #include <tesseract_scene_graph/graph.h>
-#include <tesseract_scene_graph/allowed_collision_matrix.h>
+#include <tesseract_common/allowed_collision_matrix.h>
 #include <tesseract_common/resource_locator.h>
 #include <tesseract_common/collision_margin_data.h>
 
@@ -104,12 +105,27 @@ public:
   tesseract_common::ContactManagersPluginInfo contact_managers_plugin_info;
 
   /** @brief The allowed collision matrix */
-  tesseract_scene_graph::AllowedCollisionMatrix acm;
+  tesseract_common::AllowedCollisionMatrix acm;
 
   /** @brief Collision margin data */
   tesseract_common::CollisionMarginData::Ptr collision_margin_data;
+
+  /** @brief The calibration information */
+  tesseract_common::CalibrationInfo calibration_info;
+
+  bool operator==(const SRDFModel& rhs) const;
+  bool operator!=(const SRDFModel& rhs) const;
+
+private:
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
 }  // namespace tesseract_srdf
+
+#include <boost/serialization/export.hpp>
+#include <boost/serialization/tracking.hpp>
+BOOST_CLASS_EXPORT_KEY2(tesseract_srdf::SRDFModel, "SRDFModel")
 
 #endif  // TESSERACT_SRDF_SRDF_MODEL_H
