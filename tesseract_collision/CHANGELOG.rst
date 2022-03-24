@@ -2,6 +2,86 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.8.5 (2022-03-24)
+------------------
+* Add boost serialization for Environment commands and all underlying types (`#726 <https://github.com/tesseract-robotics/tesseract/issues/726>`_)
+  * Add serialization macros to tesseract_common
+  * Add serialization for tesseract_geometry primatives
+  * Add serialization for meshes and octree
+  * Add serialization for Link and Joint
+  * Add serialization for tesseract_common types
+  * Add serialization for SceneGraph and SceneState
+  * Add serialization for tesseract_srdf and tesseract_common types
+  * Add serialization for environment commands
+  * Fix bug in getCollisionObjectPairs
+* Contributors: Matthew Powelson
+
+0.8.4 (2022-03-03)
+------------------
+* Add TESSERACT_ENABLE_EXAMPLES compile option
+* Contributors: John Wason
+
+0.8.3 (2022-02-22)
+------------------
+* Python patches for Feb 2022 update (`#716 <https://github.com/tesseract-robotics/tesseract/issues/716>`_)
+* A few fixes that were needed for Windows (`#708 <https://github.com/tesseract-robotics/tesseract/issues/708>`_)
+  * Make HACDConvexDecomposition library optional
+  Bullet extras are not easily obtained on Windows. If found, build library, otherwise ignore. Also the plain ConvexDecomposition library is looked for but never used and so removed entirely.
+  * Check if Bullet CMake variables are using absolute paths
+  For some reasons, the vcpkg ported version changes the config file to
+  use absolute paths instead of relative to BULLET_ROOT_DIR
+  * Add include for std::string
+  Co-authored-by: Levi Armstrong <levi.armstrong@gmail.com>
+* Contributors: John Wason, Josh Langsfeld
+
+0.8.2 (2022-01-27)
+------------------
+* Remove unneeded boost bind include
+  Not needed since C++11 and this header puts placeholder objects in the
+  global namespace on system-installed Boost versions
+* Contributors: Josh Langsfeld
+
+0.8.1 (2022-01-24)
+------------------
+
+0.8.0 (2022-01-19)
+------------------
+
+0.7.5 (2022-01-10)
+------------------
+* Add creation method to convex mesh
+* Produce cmake error if libraries provided by libbullet-extras are not… (`#688 <https://github.com/tesseract-robotics/tesseract/issues/688>`_)
+* Add ability to check if collision object is enabled (`#687 <https://github.com/tesseract-robotics/tesseract/issues/687>`_)
+* Contributors: Levi Armstrong
+
+0.7.4 (2021-12-15)
+------------------
+
+0.7.3 (2021-12-15)
+------------------
+
+0.7.2 (2021-12-15)
+------------------
+
+0.7.1 (2021-12-15)
+------------------
+* Move checkKinematics to getKinematicGroup and add support for clang-tidy-12 (`#682 <https://github.com/tesseract-robotics/tesseract/issues/682>`_)
+  * Move checkKinematics to getKinematicGroup and add support for clang-tidy-12
+  * Reduce the number of checks perform in checkKinematics
+  * Leverage checkKinematics in unit tests
+* Add modify_object_enabled to ContactManagerConfig
+* Contributors: Levi Armstrong, Matthew Powelson
+
+0.7.0 (2021-12-04)
+------------------
+* Rename member variables of ContactManagerConfig
+* Add ContactManagerConfig inside CollisionCheckConfig
+  This separates the up front setup things for the contact manager from things specific to the contactTest or the way the contact manager should be called.
+* Add applyCollisionCheckConfig to contact managers
+* Add AllowedCollisionMatrix to CollisionCheckConfig
+* Move AllowedCollisionMatrix into tesseract_common
+* Contributors: Levi Armstrong, Matthew Powelson
+
 0.6.9 (2021-11-29)
 ------------------
 * Fix CollisionCheckConfig to set collision_margin_override_type for constructor
