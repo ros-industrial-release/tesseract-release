@@ -36,10 +36,10 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <array>
 #include <unordered_map>
 #include <functional>
-#include <boost/bind.hpp>
 #include <tesseract_geometry/geometries.h>
 #include <tesseract_common/types.h>
 #include <tesseract_common/collision_margin_data.h>
+#include <tesseract_common/allowed_collision_matrix.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #ifdef SWIG
@@ -239,6 +239,49 @@ enum class CollisionEvaluatorType
   LVS_CONTINUOUS
 };
 
+/** @brief Identifies how the provided AllowedCollisionMatrix should be applied relative to the isAllowedFn in the
+ * contact manager */
+enum class ACMOverrideType
+{
+  /** @brief Do not apply AllowedCollisionMatrix */
+  NONE,
+  /** @brief Replace the current IsContactAllowedFn with one generated from the ACM provided */
+  ASSIGN,
+  /** @brief New IsContactAllowedFn combines the contact manager fn and the ACM generated fn with and AND */
+  AND,
+  /** @brief New IsContactAllowedFn combines the contact manager fn and the ACM generated fn with and OR */
+  OR,
+};
+
+/**
+ * @brief Contains parameters used to configure a contact manager before a series of contact checks.
+ *
+ * It should not contain information that is usually specific to a single contactTest such as CollisionObjectTransforms
+ * or specific to the way contactTests are carried out such as LVS parameters
+ *
+ * @note Active links were not added to this config since this config could be shared by multiple manipulators, and
+ * those are set based on which one is being checked
+ */
+struct ContactManagerConfig
+{
+  ContactManagerConfig() = default;
+  ContactManagerConfig(double default_margin);
+
+  /** @brief Identify how the collision margin data should be applied to the contact manager */
+  CollisionMarginOverrideType margin_data_override_type{ CollisionMarginOverrideType::NONE };
+  /** @brief Stores information about how the margins allowed between collision objects*/
+  CollisionMarginData margin_data;
+
+  /** @brief Additional AllowedCollisionMatrix to consider for this collision check.  */
+  tesseract_common::AllowedCollisionMatrix acm;
+  /** @brief Specifies how to combine the IsContactAllowedFn from acm with the one preset in the contact manager */
+  ACMOverrideType acm_override_type{ ACMOverrideType::OR };
+
+  /** @brief Each key is an object name. Objects will be enabled/disabled based on the value. Objects that aren't in the
+   * map are unmodified from the defaults*/
+  std::unordered_map<std::string, bool> modify_object_enabled;
+};
+
 /**
  * @brief This is a high level structure containing common information that collision checking utilities need. The goal
  * of this config is to allow all collision checking utilities and planners to use the same datastructure
@@ -251,10 +294,9 @@ struct CollisionCheckConfig
                        CollisionEvaluatorType type = CollisionEvaluatorType::DISCRETE,
                        double longest_valid_segment_length = 0.005);
 
-  /** @brief Identify how the collision margin data should be applied to the contact manager */
-  CollisionMarginOverrideType collision_margin_override_type{ CollisionMarginOverrideType::NONE };
-  /** @brief Stores information about how the margins allowed between collision objects*/
-  CollisionMarginData collision_margin_data;
+  /** @brief Used to configure the contact manager prior to a series of checks */
+  ContactManagerConfig contact_manager_config;
+
   /** @brief ContactRequest that will be used for this check. Default test type: FIRST*/
   ContactRequest contact_request;
   /** @brief Specifies the type of collision check to be performed. Default: DISCRETE */

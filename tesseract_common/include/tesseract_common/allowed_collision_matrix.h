@@ -1,8 +1,9 @@
-#ifndef TESSERACT_SCENE_GRAPH_ALLOWED_COLLISION_MATRIX_H
-#define TESSERACT_SCENE_GRAPH_ALLOWED_COLLISION_MATRIX_H
+#ifndef TESSERACT_COMMON_ALLOWED_COLLISION_MATRIX_H
+#define TESSERACT_COMMON_ALLOWED_COLLISION_MATRIX_H
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <boost/serialization/access.hpp>
 #include <string>
 #include <vector>
 #include <memory>
@@ -13,15 +14,17 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #ifdef SWIG
 
-%shared_ptr(tesseract_scene_graph::AllowedCollisionMatrix)
+%shared_ptr(tesseract_common::AllowedCollisionMatrix)
 %template(AllowedCollisionEntries) std::unordered_map<std::pair<std::string,std::string>, std::string, tesseract_common::PairHash>;
 
 #endif  // SWIG
 
-namespace tesseract_scene_graph
+namespace tesseract_common
 {
 using AllowedCollisionEntries =
     std::unordered_map<tesseract_common::LinkNamesPair, std::string, tesseract_common::PairHash>;
+
+bool operator==(const AllowedCollisionEntries& entries_1, const AllowedCollisionEntries& entries_2);
 
 class AllowedCollisionMatrix
 {
@@ -125,10 +128,28 @@ public:
       os << "link=" << pair.first.first << " link=" << pair.first.second << " reason=" << pair.second << std::endl;
     return os;
   }
+  bool operator==(const AllowedCollisionMatrix& rhs) const;
+  bool operator!=(const AllowedCollisionMatrix& rhs) const;
 
 private:
   AllowedCollisionEntries lookup_table_;
+
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 
-}  // namespace tesseract_scene_graph
+}  // namespace tesseract_common
+
+#include <boost/serialization/export.hpp>
+#include <boost/serialization/tracking.hpp>
+BOOST_CLASS_EXPORT_KEY2(tesseract_common::AllowedCollisionMatrix, "AllowedCollisionMatrix")
+
+#ifndef SWIG
+namespace tesseract_scene_graph
+{
+using AllowedCollisionMatrix [[deprecated("Please use tesseract_common::AllowedCollisionMatrix instead")]] =
+    tesseract_common::AllowedCollisionMatrix;
+}
+#endif  // SWIG
 #endif  // TESSERACT_SCENE_GRAPH_ALLOWED_COLLISION_MATRIX_H

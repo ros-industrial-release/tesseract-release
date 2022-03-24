@@ -26,12 +26,20 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <boost/graph/adj_list_serialize.hpp>
 #include <boost/graph/dijkstra_shortest_paths.hpp>
 #include <fstream>
 #include <queue>
 #include <console_bridge/console.h>
 #include <boost/graph/undirected_graph.hpp>
 #include <boost/graph/copy.hpp>
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/nvp.hpp>
+#include <boost/serialization/shared_ptr.hpp>
+#include <boost/serialization/split_member.hpp>
+#include <boost/serialization/unordered_map.hpp>
+#include <boost/serialization/utility.hpp>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_scene_graph/graph.h>
@@ -58,7 +66,7 @@ struct ugraph_vertex_copier
   mutable typename boost::property_map<UGraph, boost::vertex_all_t>::type vertex_all_map2;
 };
 
-SceneGraph::SceneGraph(const std::string& name) : acm_(std::make_shared<AllowedCollisionMatrix>())
+SceneGraph::SceneGraph(const std::string& name) : acm_(std::make_shared<tesseract_common::AllowedCollisionMatrix>())
 {
   boost::set_property(static_cast<Graph&>(*this), boost::graph_name, name);
 }
@@ -610,9 +618,9 @@ bool SceneGraph::isCollisionAllowed(const std::string& link_name1, const std::st
   return acm_->isCollisionAllowed(link_name1, link_name2);
 }
 
-AllowedCollisionMatrix::ConstPtr SceneGraph::getAllowedCollisionMatrix() const { return acm_; }
+tesseract_common::AllowedCollisionMatrix::ConstPtr SceneGraph::getAllowedCollisionMatrix() const { return acm_; }
 
-AllowedCollisionMatrix::Ptr SceneGraph::getAllowedCollisionMatrix() { return acm_; }
+tesseract_common::AllowedCollisionMatrix::Ptr SceneGraph::getAllowedCollisionMatrix() { return acm_; }
 
 Link::ConstPtr SceneGraph::getSourceLink(const std::string& joint_name) const
 {
@@ -953,12 +961,13 @@ tesseract_scene_graph::Joint clone_prefix(const tesseract_scene_graph::Joint::Co
   return ret;
 }
 
-AllowedCollisionMatrix::Ptr clone_prefix(const AllowedCollisionMatrix::ConstPtr& acm, const std::string& prefix)
+tesseract_common::AllowedCollisionMatrix::Ptr
+clone_prefix(const tesseract_common::AllowedCollisionMatrix::ConstPtr& acm, const std::string& prefix)
 {
   if (prefix.empty())
-    return std::make_shared<AllowedCollisionMatrix>(*acm);
+    return std::make_shared<tesseract_common::AllowedCollisionMatrix>(*acm);
 
-  auto new_acm = std::make_shared<AllowedCollisionMatrix>();
+  auto new_acm = std::make_shared<tesseract_common::AllowedCollisionMatrix>();
   for (const auto& entry : acm->getAllAllowedCollisions())
     new_acm->addAllowedCollision(prefix + entry.first.first, prefix + entry.first.second, entry.second);
 
@@ -1057,4 +1066,69 @@ bool SceneGraph::insertSceneGraph(const tesseract_scene_graph::SceneGraph& scene
   return addJointHelper(std::make_shared<Joint>(joint.clone()));
 }
 
+bool SceneGraph::operator==(const SceneGraph& rhs) const
+{
+  using namespace tesseract_common;
+  // Currently these only compare the Link/Joint.
+  auto link_pair_equal = [](const std::pair<const Link::Ptr, Vertex>& v1, const std::pair<Link::Ptr, Vertex>& v2) {
+    return pointersEqual(v1.first, v2.first);
+  };
+  auto joint_pair_equal = [](const std::pair<const Joint::Ptr, Edge>& v1, const std::pair<Joint::Ptr, Edge>& v2) {
+    return pointersEqual(v1.first, v2.first);
+  };
+
+  bool equal = true;
+  equal &= pointersEqual(acm_, rhs.acm_);
+  equal &= isIdenticalMap<std::unordered_map<std::string, std::pair<Link::Ptr, Vertex>>, std::pair<Link::Ptr, Vertex>>(
+      link_map_, rhs.link_map_, link_pair_equal);
+  equal &= isIdenticalMap<std::unordered_map<std::string, std::pair<Joint::Ptr, Edge>>, std::pair<Joint::Ptr, Edge>>(
+      joint_map_, rhs.joint_map_, joint_pair_equal);
+
+  return equal;
+}
+bool SceneGraph::operator!=(const SceneGraph& rhs) const { return !operator==(rhs); }
+
+template <class Archive>
+void SceneGraph::save(Archive& ar, const unsigned int /*version*/) const
+{
+  using namespace boost::serialization;
+  ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(Graph);
+  ar& BOOST_SERIALIZATION_NVP(acm_);
+}
+
+template <class Archive>
+void SceneGraph::load(Archive& ar, const unsigned int /*version*/)
+{
+  using namespace boost::serialization;
+  ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(Graph);
+  ar& BOOST_SERIALIZATION_NVP(acm_);
+
+  {
+    Graph::vertex_iterator i, iend;
+    for (boost::tie(i, iend) = boost::vertices(*this); i != iend; ++i)
+    {
+      Link::Ptr link = boost::get(boost::vertex_link, *this)[*i];
+      link_map_[link->getName()] = std::make_pair(link, *i);
+    }
+  }
+  {
+    Graph::edge_iterator i, iend;
+    for (boost::tie(i, iend) = boost::edges(*this); i != iend; ++i)
+    {
+      Joint::Ptr joint = boost::get(boost::edge_joint, *this)[*i];
+      joint_map_[joint->getName()] = std::make_pair(joint, *i);
+    }
+  }
+}
+
+template <class Archive>
+void SceneGraph::serialize(Archive& ar, const unsigned int version)
+{
+  boost::serialization::split_member(ar, *this, version);
+}
+
 }  // namespace tesseract_scene_graph
+
+#include <tesseract_common/serialization.h>
+TESSERACT_SERIALIZE_SAVE_LOAD_ARCHIVES_INSTANTIATE(tesseract_scene_graph::SceneGraph)
+BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_scene_graph::SceneGraph)

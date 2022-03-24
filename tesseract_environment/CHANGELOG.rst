@@ -2,6 +2,92 @@
 Changelog for package tesseract_environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.8.5 (2022-03-24)
+------------------
+* Add boost serialization for Environment commands and all underlying types (`#726 <https://github.com/tesseract-robotics/tesseract/issues/726>`_)
+  * Add serialization macros to tesseract_common
+  * Add serialization for tesseract_geometry primatives
+  * Add serialization for meshes and octree
+  * Add serialization for Link and Joint
+  * Add serialization for tesseract_common types
+  * Add serialization for SceneGraph and SceneState
+  * Add serialization for tesseract_srdf and tesseract_common types
+  * Add serialization for environment commands
+  * Fix bug in getCollisionObjectPairs
+* Add methods for getting link transform information from state solver
+* Contributors: Levi Armstrong, Matthew Powelson
+
+0.8.4 (2022-03-03)
+------------------
+* Add method to environment to get relative link transform
+* Contributors: Levi Armstrong
+
+0.8.3 (2022-02-22)
+------------------
+* Python patches for Feb 2022 update (`#716 <https://github.com/tesseract-robotics/tesseract/issues/716>`_)
+* A few fixes that were needed for Windows (`#708 <https://github.com/tesseract-robotics/tesseract/issues/708>`_)
+  * Make HACDConvexDecomposition library optional
+  Bullet extras are not easily obtained on Windows. If found, build library, otherwise ignore. Also the plain ConvexDecomposition library is looked for but never used and so removed entirely.
+  * Check if Bullet CMake variables are using absolute paths
+  For some reasons, the vcpkg ported version changes the config file to
+  use absolute paths instead of relative to BULLET_ROOT_DIR
+  * Add include for std::string
+  Co-authored-by: Levi Armstrong <levi.armstrong@gmail.com>
+* Contributors: John Wason, Josh Langsfeld
+
+0.8.2 (2022-01-27)
+------------------
+* Add ability to provide calibration information in the SRDF (`#703 <https://github.com/tesseract-robotics/tesseract/issues/703>`_)
+  * Add missing package tesseract_srdf in CI after script
+  * Add support for calibration info in SRDF
+* Contributors: Levi Armstrong
+
+0.8.1 (2022-01-24)
+------------------
+
+0.8.0 (2022-01-19)
+------------------
+* Fix check trajectory which should return a vector same length as trajectory (`#698 <https://github.com/tesseract-robotics/tesseract/issues/698>`_)
+* Update Kinematics Cache To Include IK Solver (`#695 <https://github.com/tesseract-robotics/tesseract/issues/695>`_)
+* Contributors: Levi Armstrong, marrts
+
+0.7.5 (2022-01-10)
+------------------
+* Updated environment benchmark (`#694 <https://github.com/tesseract-robotics/tesseract/issues/694>`_)
+* Update library names in benchmarks (`#681 <https://github.com/tesseract-robotics/tesseract/issues/681>`_)
+* Contributors: Matthew Powelson, Michael Ripperger
+
+0.7.4 (2021-12-15)
+------------------
+
+0.7.3 (2021-12-15)
+------------------
+
+0.7.2 (2021-12-15)
+------------------
+
+0.7.1 (2021-12-15)
+------------------
+* Move checkKinematics to getKinematicGroup and add support for clang-tidy-12 (`#682 <https://github.com/tesseract-robotics/tesseract/issues/682>`_)
+  * Move checkKinematics to getKinematicGroup and add support for clang-tidy-12
+  * Reduce the number of checks perform in checkKinematics
+  * Leverage checkKinematics in unit tests
+* Add modify_object_enabled to ContactManagerConfig
+* Contributors: Levi Armstrong, Matthew Powelson
+
+0.7.0 (2021-12-04)
+------------------
+* Rename member variables of ContactManagerConfig
+* Fix KinematicGroup and JointGroup cache to clear on current state changed
+* Add ContactManagerConfig inside CollisionCheckConfig
+  This separates the up front setup things for the contact manager from things specific to the contactTest or the way the contact manager should be called.
+* Add unit test for checkTrajectoryState and checkTrajectorySegment
+* Add applyCollisionCheckConfig to contact managers
+* Add AllowedCollisionMatrix to CollisionCheckConfig
+* Move AllowedCollisionMatrix into tesseract_common
+* Correctly set the collision margin data in the environment utilities
+* Contributors: Levi Armstrong, Matthew Powelson
+
 0.6.9 (2021-11-29)
 ------------------
 

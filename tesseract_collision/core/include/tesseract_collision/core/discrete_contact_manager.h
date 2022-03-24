@@ -37,6 +37,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #ifdef SWIG
 %shared_ptr(tesseract_collision::DiscreteContactManager)
+%wrap_unique_ptr(DiscreteContactManagerUPtr,tesseract_collision::DiscreteContactManager)
 #endif  // SWIG
 
 namespace tesseract_collision
@@ -128,22 +129,29 @@ public:
   virtual bool disableCollisionObject(const std::string& name) = 0;
 
   /**
-   * @brief Set a single collision object's tansforms
+   * @brief Check if collision object is enabled
    * @param name The name of the object
-   * @param pose The tranformation in world
+   * @return True if enabled, otherwise false
+   */
+  virtual bool isCollisionObjectEnabled(const std::string& name) const = 0;
+
+  /**
+   * @brief Set a single collision object's transforms
+   * @param name The name of the object
+   * @param pose The transformation in world
    */
   virtual void setCollisionObjectsTransform(const std::string& name, const Eigen::Isometry3d& pose) = 0;
 
   /**
-   * @brief Set a series of collision object's tranforms
+   * @brief Set a series of collision object's transforms
    * @param names The name of the object
-   * @param poses The tranformation in world
+   * @param poses The transformation in world
    */
   virtual void setCollisionObjectsTransform(const std::vector<std::string>& names,
                                             const tesseract_common::VectorIsometry3d& poses) = 0;
 
   /**
-   * @brief Set a series of collision object's tranforms
+   * @brief Set a series of collision object's transforms
    * @param transforms A transform map <name, pose>
    */
   virtual void setCollisionObjectsTransform(const tesseract_common::TransformMap& transforms) = 0;
@@ -213,6 +221,12 @@ public:
    * @param request The contact request data
    */
   virtual void contactTest(ContactResultMap& collisions, const ContactRequest& request) = 0;
+
+  /**
+   * @brief Applies settings in the config
+   * @param config Settings to be applies
+   */
+  virtual void applyContactManagerConfig(const ContactManagerConfig& config);
 };
 
 }  // namespace tesseract_collision
