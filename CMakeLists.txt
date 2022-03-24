@@ -60,7 +60,6 @@ add_library(
   src/link.cpp
   src/material.cpp
   src/mesh.cpp
-  src/mesh_writer.cpp
   src/mimic.cpp
   src/octomap.cpp
   src/octree.cpp
@@ -70,7 +69,8 @@ add_library(
   src/sdf_mesh.cpp
   src/sphere.cpp
   src/urdf_parser.cpp
-  src/visual.cpp)
+  src/visual.cpp
+  src/utils.cpp)
 target_link_libraries(
   ${PROJECT_NAME}
   PUBLIC Boost::boost
@@ -94,8 +94,13 @@ target_code_coverage(
 
 # PCL does not support c++11 on Xenial so cannot include point cloud parsing from urdf Boost version number is in XYYYZZ
 # format such that: (BOOST_VERSION % 100) is the sub-minor version ((BOOST_VERSION / 100) % 1000) is the minor version
-# (BOOST_VERSION / 100000) is the major version.
-if(Boost_VERSION VERSION_GREATER "106000")
+# (BOOST_VERSION_MACRO / 100000) is the major version.
+if(Boost_VERSION_MACRO)
+  set(TESSERACT_Boost_VERSION_MACRO ${Boost_VERSION_MACRO})
+else(TESSERACT_Boost_VERSION_MACRO ${Boost_VERSION_MACRO})
+  set(TESSERACT_Boost_VERSION_MACRO ${Boost_VERSION})
+endif()
+if(TESSERACT_Boost_VERSION_MACRO VERSION_GREATER "106000")
   target_link_libraries(${PROJECT_NAME} PUBLIC ${PCL_LIBRARIES})
   target_compile_definitions(${PROJECT_NAME} PUBLIC TESSERACT_PARSE_POINT_CLOUDS="ON")
   foreach(DEF ${PCL_DEFINITIONS})
@@ -133,10 +138,12 @@ configure_package(NAMESPACE tesseract TARGETS ${PROJECT_NAME})
 
 # Mark cpp header files for installation
 install(FILES include/${PROJECT_NAME}/urdf_parser.h DESTINATION include/${PROJECT_NAME})
-install(FILES include/${PROJECT_NAME}/mesh_writer.h DESTINATION include/${PROJECT_NAME})
+install(FILES include/${PROJECT_NAME}/utils.h DESTINATION include/${PROJECT_NAME})
 
 # ADD Examples
-add_subdirectory(examples)
+if(TESSERACT_ENABLE_EXAMPLES)
+  add_subdirectory(examples)
+endif()
 
 if(TESSERACT_ENABLE_TESTING)
   enable_testing()
