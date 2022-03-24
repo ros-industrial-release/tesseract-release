@@ -43,8 +43,9 @@ add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENA
 add_library(
   ${PROJECT_NAME}
   src/graph.cpp
-  src/utils.cpp
+  src/joint.cpp
   src/kdl_parser.cpp
+  src/link.cpp
   src/scene_state.cpp)
 target_link_libraries(
   ${PROJECT_NAME}
@@ -84,7 +85,9 @@ install(
   PATTERN ".svn" EXCLUDE)
 
 # ADD Examples
-add_subdirectory(examples)
+if(TESSERACT_ENABLE_EXAMPLES)
+  add_subdirectory(examples)
+endif()
 
 if(TESSERACT_ENABLE_TESTING)
   enable_testing()

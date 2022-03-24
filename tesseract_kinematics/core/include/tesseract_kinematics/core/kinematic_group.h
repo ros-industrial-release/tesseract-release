@@ -35,6 +35,11 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_kinematics/core/joint_group.h>
 #include <tesseract_kinematics/core/inverse_kinematics.h>
 
+#ifdef SWIG
+%shared_ptr(tesseract_kinematics::KinematicGroup)
+%wrap_unique_ptr(KinematicGroupUPtr,tesseract_kinematics::KinematicGroup)
+#endif  // SWIG
+
 namespace tesseract_kinematics
 {
 /**
@@ -55,6 +60,8 @@ struct KinGroupIKInput
   {
   }
 
+  KinGroupIKInput() = default;
+
   /** @brief The desired inverse kinematic pose */
   Eigen::Isometry3d pose;
 
@@ -70,8 +77,13 @@ struct KinGroupIKInput
    */
   std::string tip_link_name;  // This defines the internal kinematic group the information belongs to
 };
-
+#ifndef SWIG
 using KinGroupIKInputs = tesseract_common::AlignedVector<KinGroupIKInput>;
+#else
+// clang-format off
+%tesseract_aligned_vector_using(KinGroupIKInputs,tesseract_kinematics::KinGroupIKInput)
+// clang-format on
+#endif
 
 class KinematicGroup : public JointGroup
 {
@@ -107,13 +119,22 @@ public:
   /**
    * @brief Calculates joint solutions given a pose.
    * @details If redundant solutions are needed see utility function getRedundantSolutions.
-   * @param solutions A vector of solutions, so check the size of the vector to determine the number of solutions
    * @param tip_link_poses The input information to solve inverse kinematics for. There must be an input for each link
    * provided in getTipLinkNames
    * @param seed Vector of seed joint angles (size must match number of joints in robot chain)
    * @return A vector of solutions, If empty it failed to find a solution (including uninitialized)
    */
   IKSolutions calcInvKin(const KinGroupIKInputs& tip_link_poses, const Eigen::Ref<const Eigen::VectorXd>& seed) const;
+
+  /**
+   * @brief Calculates joint solutions given a pose.
+   * @details If redundant solutions are needed see utility function getRedundantSolutions.
+   * @param tip_link_pose The input information to solve inverse kinematics for. This is a convenience function for
+   * when only one tip link exists
+   * @param seed Vector of seed joint angles (size must match number of joints in robot chain)
+   * @return A vector of solutions, If empty it failed to find a solution (including uninitialized)
+   */
+  IKSolutions calcInvKin(const KinGroupIKInput& tip_link_pose, const Eigen::Ref<const Eigen::VectorXd>& seed) const;
 
   /** @brief Returns all possible working frames in which goal poses can be defined
    * @details The inverse kinematics solver requires that all poses be defined relative to a single working frame.
@@ -148,3 +169,7 @@ private:
 }  // namespace tesseract_kinematics
 
 #endif  // TESSERACT_KINEMATICS_KINEMATIC_GROUP_H
+
+#ifdef SWIG
+%tesseract_aligned_vector(KinGroupIKInputs,tesseract_kinematics::KinGroupIKInput)
+#endif  // SWIG

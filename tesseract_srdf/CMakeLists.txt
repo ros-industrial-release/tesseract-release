@@ -44,6 +44,7 @@ add_code_coverage_all_targets(EXCLUDE ${COVERAGE_EXCLUDE} ENABLE ${TESSERACT_ENA
 add_library(
   ${PROJECT_NAME}
   src/collision_margins.cpp
+  src/configs.cpp
   src/disabled_collisions.cpp
   src/group_states.cpp
   src/group_tool_center_points.cpp
@@ -79,7 +80,9 @@ install(FILES include/${PROJECT_NAME}/srdf_model.h include/${PROJECT_NAME}/kinem
               include/${PROJECT_NAME}/utils.h DESTINATION include/${PROJECT_NAME})
 
 # ADD Examples
-add_subdirectory(examples)
+if(TESSERACT_ENABLE_EXAMPLES)
+  add_subdirectory(examples)
+endif()
 
 if(TESSERACT_ENABLE_TESTING)
   enable_testing()

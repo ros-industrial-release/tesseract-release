@@ -2,6 +2,47 @@
 Changelog for package tesseract_state_solver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.8.5 (2022-03-24)
+------------------
+* Add methods for getting link transform information from state solver
+* Contributors: Levi Armstrong
+
+0.8.4 (2022-03-03)
+------------------
+
+0.8.3 (2022-02-22)
+------------------
+* Python patches for Feb 2022 update (`#716 <https://github.com/tesseract-robotics/tesseract/issues/716>`_)
+* Add missing UPtr and ConstUPtr typedef for KDL and OFKT state solver (`#711 <https://github.com/tesseract-robotics/tesseract/issues/711>`_)
+* Contributors: John Wason, Levi Armstrong
+
+0.8.2 (2022-01-27)
+------------------
+
+0.8.1 (2022-01-24)
+------------------
+
+0.8.0 (2022-01-19)
+------------------
+
+0.7.5 (2022-01-10)
+------------------
+
+0.7.4 (2021-12-15)
+------------------
+
+0.7.3 (2021-12-15)
+------------------
+
+0.7.2 (2021-12-15)
+------------------
+
+0.7.1 (2021-12-15)
+------------------
+
+0.7.0 (2021-12-04)
+------------------
+
 0.6.9 (2021-11-29)
 ------------------
 
