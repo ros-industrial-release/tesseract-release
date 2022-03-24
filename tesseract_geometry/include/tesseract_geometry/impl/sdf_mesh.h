@@ -28,6 +28,8 @@
 
 #include <tesseract_common/macros.h>
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/export.hpp>
 #include <Eigen/Geometry>
 #include <memory>
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
@@ -128,12 +130,10 @@ public:
       std::throw_with_nested(std::runtime_error("Mesh is not triangular"));  // LCOV_EXCL_LINE
   }
 
+  SDFMesh() = default;
   ~SDFMesh() override = default;
-  SDFMesh(const SDFMesh&) = delete;
-  SDFMesh& operator=(const SDFMesh&) = delete;
-  SDFMesh(SDFMesh&&) = delete;
-  SDFMesh& operator=(SDFMesh&&) = delete;
 
+#ifndef SWIG
   /**
    * @brief Get SDF mesh Triangles
    * @return A vector of triangle indices
@@ -148,13 +148,23 @@ public:
    * @return Number of triangles
    */
   [[deprecated("Please use getFaceCount() instead")]] int getTriangleCount() const { return getFaceCount(); }
+#endif  // SWIG
 
   Geometry::Ptr clone() const override
   {
     return std::make_shared<SDFMesh>(getVertices(), getFaces(), getFaceCount(), getResource(), getScale());
   }
 
+  bool operator==(const SDFMesh& rhs) const;
+  bool operator!=(const SDFMesh& rhs) const;
+
 private:
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version);  // NOLINT
 };
 }  // namespace tesseract_geometry
+#include <boost/serialization/tracking.hpp>
+BOOST_CLASS_EXPORT_KEY2(tesseract_geometry::SDFMesh, "SDFMesh")
+BOOST_CLASS_TRACKING(tesseract_geometry::SDFMesh, boost::serialization::track_never)
 #endif
