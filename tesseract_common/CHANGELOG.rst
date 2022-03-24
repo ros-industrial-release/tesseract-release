@@ -2,6 +2,77 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.8.5 (2022-03-24)
+------------------
+* Add boost serialization for Environment commands and all underlying types (`#726 <https://github.com/tesseract-robotics/tesseract/issues/726>`_)
+  * Add serialization macros to tesseract_common
+  * Add serialization for tesseract_geometry primatives
+  * Add serialization for meshes and octree
+  * Add serialization for Link and Joint
+  * Add serialization for tesseract_common types
+  * Add serialization for SceneGraph and SceneState
+  * Add serialization for tesseract_srdf and tesseract_common types
+  * Add serialization for environment commands
+  * Fix bug in getCollisionObjectPairs
+* Adjust for breaking change in Boost DLL 1.76
+* Contributors: Josh Langsfeld, Matthew Powelson
+
+0.8.4 (2022-03-03)
+------------------
+* Set TESSERACT_ENABLE_EXAMPLES default to ON
+* Add TESSERACT_ENABLE_EXAMPLES compile option
+* Contributors: John Wason, Levi Armstrong
+
+0.8.3 (2022-02-22)
+------------------
+* Python patches for Feb 2022 update (`#716 <https://github.com/tesseract-robotics/tesseract/issues/716>`_)
+* Contributors: John Wason
+
+0.8.2 (2022-01-27)
+------------------
+* Add ability to provide calibration information in the SRDF (`#703 <https://github.com/tesseract-robotics/tesseract/issues/703>`_)
+  * Add missing package tesseract_srdf in CI after script
+  * Add support for calibration info in SRDF
+* Contributors: Levi Armstrong
+
+0.8.1 (2022-01-24)
+------------------
+* Add any.cpp
+* Contributors: Levi Armstrong
+
+0.8.0 (2022-01-19)
+------------------
+* CPack Update (`#693 <https://github.com/tesseract-robotics/tesseract/issues/693>`_)
+* Add BOOST_SERIALIZATION_ASSUME_ABSTRACT to Any type erasure
+* Contributors: Levi Armstrong, Michael Ripperger
+
+0.7.5 (2022-01-10)
+------------------
+* Add -Wdeprecated-declarations to push pop macros
+* Contributors: Levi Armstrong
+
+0.7.4 (2021-12-15)
+------------------
+
+0.7.3 (2021-12-15)
+------------------
+
+0.7.2 (2021-12-15)
+------------------
+
+0.7.1 (2021-12-15)
+------------------
+* Move checkKinematics to getKinematicGroup and add support for clang-tidy-12 (`#682 <https://github.com/tesseract-robotics/tesseract/issues/682>`_)
+  * Move checkKinematics to getKinematicGroup and add support for clang-tidy-12
+  * Reduce the number of checks perform in checkKinematics
+  * Leverage checkKinematics in unit tests
+* Contributors: Levi Armstrong
+
+0.7.0 (2021-12-04)
+------------------
+* Move AllowedCollisionMatrix into tesseract_common
+* Contributors: Matthew Powelson
+
 0.6.9 (2021-11-29)
 ------------------
 

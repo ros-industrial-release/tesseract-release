@@ -36,6 +36,37 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/types.h>
 
+namespace tesseract_common
+{
+/**
+ * @brief Converts a YAML::Node to a yaml string
+ * @param node Input node
+ * @return String containing the yaml
+ */
+inline std::string toYAMLString(const YAML::Node& node)
+{
+  std::stringstream stream;
+  stream << node;
+  return stream.str();
+}
+/**
+ * @brief Converts yaml string to a YAML::Node
+ * @param string Input string containing the yaml
+ * @return Resulting YAML::Node
+ */
+inline YAML::Node fromYAMLString(const std::string& string) { return YAML::Load(string); }
+/**
+ * @brief Checks if the YAML::Nodes are identical
+ * @details The == operator checks if they reference the same memory. This checks if they contain the same information
+ * @param node1 Input YAML::Node
+ * @param node2 Input YAML::Node
+ */
+inline bool isIdentical(const YAML::Node& node1, const YAML::Node& node2)
+{
+  return toYAMLString(node1) == toYAMLString(node2);
+}
+}  // namespace tesseract_common
+
 namespace YAML
 {
 template <>
@@ -454,6 +485,51 @@ struct convert<tesseract_common::ContactManagersPluginInfo>
                                  "' to tesseract_common::PluginInfoContainer! Details: " + e.what());
       }
     }
+
+    return true;
+  }
+};
+
+template <>
+struct convert<tesseract_common::TransformMap>
+{
+  static Node encode(const tesseract_common::TransformMap& rhs)
+  {
+    Node node;
+    for (const auto& pair : rhs)
+      node[pair.first] = pair.second;
+
+    return node;
+  }
+
+  static bool decode(const Node& node, tesseract_common::TransformMap& rhs)
+  {
+    if (!node.IsMap())
+      return false;
+
+    for (const auto& pair : node)
+      rhs[pair.first.as<std::string>()] = pair.second.as<Eigen::Isometry3d>();
+
+    return true;
+  }
+};
+
+template <>
+struct convert<tesseract_common::CalibrationInfo>
+{
+  static Node encode(const tesseract_common::CalibrationInfo& rhs)
+  {
+    Node node;
+    node["joints"] = rhs.joints;
+
+    return node;
+  }
+
+  static bool decode(const Node& node, tesseract_common::CalibrationInfo& rhs)
+  {
+    const YAML::Node& joints_node = node["joints"];
+
+    rhs.joints = joints_node.as<tesseract_common::TransformMap>();
 
     return true;
   }
