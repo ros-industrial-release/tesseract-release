@@ -40,7 +40,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_collision/core/contact_managers_plugin_factory.h>
 #include <tesseract_scene_graph/graph.h>
 #include <tesseract_scene_graph/scene_state.h>
-#include <tesseract_scene_graph/utils.h>
 #include <tesseract_state_solver/mutable_state_solver.h>
 #include <tesseract_urdf/urdf_parser.h>
 #include <tesseract_srdf/srdf_model.h>
@@ -54,6 +53,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #ifdef SWIG
 %shared_ptr(tesseract_environment::Environment)
+%wrap_unique_ptr(EnvironmentUPtr,tesseract_environment::Environment)
 #endif  // SWIG
 
 namespace tesseract_environment
@@ -318,7 +318,7 @@ public:
    * @brief Get the allowed collision matrix
    * @return AllowedCollisionMatrixConstPtr
    */
-  tesseract_scene_graph::AllowedCollisionMatrix::ConstPtr getAllowedCollisionMatrix() const;
+  tesseract_common::AllowedCollisionMatrix::ConstPtr getAllowedCollisionMatrix() const;
 
   /**
    * @brief Get a vector of joint names in the environment
@@ -402,6 +402,14 @@ public:
    * @return Transform and is identity when no transform is available.
    */
   Eigen::Isometry3d getLinkTransform(const std::string& link_name) const;
+
+  /**
+   * @brief Get transform between two links using the current state
+   * @param from_link_name The link name the transform should be relative to
+   * @param to_link_name The link name to get transform
+   * @return The relative transform = inv(Transform(from_link_name)) * Transform(to_link_name)
+   */
+  Eigen::Isometry3d getRelativeLinkTransform(const std::string& from_link_name, const std::string& to_link_name) const;
 
   /**
    * @brief Returns a clone of the environments state solver
@@ -536,7 +544,8 @@ protected:
    *  @brief A cache of kinematic groups to provide faster access
    *  @details This will cleared when environment changes
    */
-  mutable std::unordered_map<std::string, tesseract_kinematics::KinematicGroup::UPtr> kinematic_group_cache_;
+  mutable std::map<std::pair<std::string, std::string>, tesseract_kinematics::KinematicGroup::UPtr>
+      kinematic_group_cache_;
   mutable std::shared_mutex kinematic_group_cache_mutex_;
 
   /** @brief The environment can be accessed from multiple threads, need use mutex throughout */

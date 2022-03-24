@@ -2,6 +2,55 @@
 Changelog for package tesseract_kinematics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.8.5 (2022-03-24)
+------------------
+
+0.8.4 (2022-03-03)
+------------------
+* Add overload method for calcInvKin to take single KinGroupIKInput
+* Contributors: Levi Armstrong
+
+0.8.3 (2022-02-22)
+------------------
+* Python patches for Feb 2022 update (`#716 <https://github.com/tesseract-robotics/tesseract/issues/716>`_)
+* Update UR Kinematics Parameters for e-series
+  UR10eParameters, UR5eParameters and UR3eParameters values were slightly
+  off compared to official documentation. We updated them to match.
+* Contributors: John Wason, Leo Ghafari
+
+0.8.2 (2022-01-27)
+------------------
+
+0.8.1 (2022-01-24)
+------------------
+
+0.8.0 (2022-01-19)
+------------------
+
+0.7.5 (2022-01-10)
+------------------
+
+0.7.4 (2021-12-15)
+------------------
+
+0.7.3 (2021-12-15)
+------------------
+
+0.7.2 (2021-12-15)
+------------------
+
+0.7.1 (2021-12-15)
+------------------
+* Move checkKinematics to getKinematicGroup and add support for clang-tidy-12 (`#682 <https://github.com/tesseract-robotics/tesseract/issues/682>`_)
+  * Move checkKinematics to getKinematicGroup and add support for clang-tidy-12
+  * Reduce the number of checks perform in checkKinematics
+  * Leverage checkKinematics in unit tests
+* Add redundancy capable joints to the harmonizeTowardZero function
+* Contributors: Levi Armstrong
+
+0.7.0 (2021-12-04)
+------------------
+
 0.6.9 (2021-11-29)
 ------------------
 
