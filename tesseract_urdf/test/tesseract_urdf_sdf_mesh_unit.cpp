@@ -6,11 +6,23 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_urdf/sdf_mesh.h>
 #include <tesseract_geometry/impl/sdf_mesh.h>
+#include <tesseract_support/tesseract_support_resource_locator.h>
 #include "tesseract_urdf_common_unit.h"
+
+static std::string getTempPkgPath()
+{
+  std::string tmp = tesseract_common::getTempPath();
+  std::string tmppkg = tmp + "tmppkg";
+  if (!tesseract_common::fs::is_directory(tmppkg) || !tesseract_common::fs::exists(tmppkg))
+  {
+    tesseract_common::fs::create_directory(tmppkg);
+  }
+  return tmppkg;
+}
 
 TEST(TesseractURDFUnit, parse_sdf_mesh)  // NOLINT
 {
-  tesseract_common::SimpleResourceLocator resource_locator(locateResource);
+  tesseract_common::TesseractSupportResourceLocator resource_locator;
   {
     std::string str =
         R"(<sdf_mesh filename="package://tesseract_support/meshes/sphere_p25m.stl" scale="1 2 1" extra="0 0 0"/>)";
@@ -114,16 +126,17 @@ TEST(TesseractURDFUnit, write_sdf_mesh)  // NOLINT
     std::string text;
     EXPECT_EQ(0,
               writeTest<tesseract_geometry::SDFMesh::Ptr>(
-                  sdf_mesh, &tesseract_urdf::writeSDFMesh, text, std::string("/tmp/"), std::string("sdf0.ply")));
-    EXPECT_EQ(text, R"(<sdf_mesh filename="package://tmp/sdf0.ply"/>)");
+                  sdf_mesh, &tesseract_urdf::writeSDFMesh, text, getTempPkgPath(), std::string("sdf0.ply")));
+    EXPECT_EQ(text, R"(<sdf_mesh filename="package://tmppkg/sdf0.ply"/>)");
   }
 
   {
     tesseract_geometry::SDFMesh::Ptr sdf_mesh = nullptr;
     std::string text;
-    EXPECT_EQ(1,
-              writeTest<tesseract_geometry::SDFMesh::Ptr>(
-                  sdf_mesh, &tesseract_urdf::writeSDFMesh, text, std::string("/tmp/"), std::string("sdf2.ply")));
+    EXPECT_EQ(
+        1,
+        writeTest<tesseract_geometry::SDFMesh::Ptr>(
+            sdf_mesh, &tesseract_urdf::writeSDFMesh, text, tesseract_common::getTempPath(), std::string("sdf2.ply")));
     EXPECT_EQ(text, "");
   }
 }

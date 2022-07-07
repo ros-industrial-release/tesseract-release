@@ -71,6 +71,28 @@ SceneGraph::SceneGraph(const std::string& name) : acm_(std::make_shared<tesserac
   boost::set_property(static_cast<Graph&>(*this), boost::graph_name, name);
 }
 
+SceneGraph::SceneGraph(SceneGraph&& other) noexcept
+  : Graph(std::forward<Graph>(other))
+  , link_map_(std::move(other.link_map_))
+  , joint_map_(std::move(other.joint_map_))
+  , acm_(std::move(other.acm_))
+{
+  rebuildLinkAndJointMaps();
+}
+
+SceneGraph& SceneGraph::operator=(SceneGraph&& other) noexcept
+{
+  Graph::operator=(std::forward<Graph>(other));
+
+  link_map_ = std::move(other.link_map_);
+  joint_map_ = std::move(other.joint_map_);
+  acm_ = std::move(other.acm_);
+
+  rebuildLinkAndJointMaps();
+
+  return *this;
+}
+
 SceneGraph::UPtr SceneGraph::clone() const
 {
   auto cloned_graph = std::make_unique<SceneGraph>();
@@ -403,7 +425,10 @@ bool SceneGraph::removeJoint(const std::string& name, bool recursive)
   else
   {
     if (getInboundJoints(found->second.first->child_link_name).size() == 1)
-      removeLink(found->second.first->child_link_name, true);
+    {
+      std::string child_link_name = found->second.first->child_link_name;
+      removeLink(child_link_name, true);
+    }
   }
 
   return true;
@@ -1066,6 +1091,30 @@ bool SceneGraph::insertSceneGraph(const tesseract_scene_graph::SceneGraph& scene
   return addJointHelper(std::make_shared<Joint>(joint.clone()));
 }
 
+void SceneGraph::rebuildLinkAndJointMaps()
+{
+  link_map_.clear();
+  joint_map_.clear();
+
+  {  // Rebuild link map
+    Graph::vertex_iterator i, iend;
+    for (boost::tie(i, iend) = boost::vertices(*this); i != iend; ++i)
+    {
+      Link::Ptr link = boost::get(boost::vertex_link, *this)[*i];
+      link_map_[link->getName()] = std::make_pair(link, *i);
+    }
+  }
+
+  {  // Rebuild joint map
+    Graph::edge_iterator i, iend;
+    for (boost::tie(i, iend) = boost::edges(*this); i != iend; ++i)
+    {
+      Joint::Ptr joint = boost::get(boost::edge_joint, *this)[*i];
+      joint_map_[joint->getName()] = std::make_pair(joint, *i);
+    }
+  }
+}
+
 bool SceneGraph::operator==(const SceneGraph& rhs) const
 {
   using namespace tesseract_common;
@@ -1103,22 +1152,7 @@ void SceneGraph::load(Archive& ar, const unsigned int /*version*/)
   ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(Graph);
   ar& BOOST_SERIALIZATION_NVP(acm_);
 
-  {
-    Graph::vertex_iterator i, iend;
-    for (boost::tie(i, iend) = boost::vertices(*this); i != iend; ++i)
-    {
-      Link::Ptr link = boost::get(boost::vertex_link, *this)[*i];
-      link_map_[link->getName()] = std::make_pair(link, *i);
-    }
-  }
-  {
-    Graph::edge_iterator i, iend;
-    for (boost::tie(i, iend) = boost::edges(*this); i != iend; ++i)
-    {
-      Joint::Ptr joint = boost::get(boost::edge_joint, *this)[*i];
-      joint_map_[joint->getName()] = std::make_pair(joint, *i);
-    }
-  }
+  rebuildLinkAndJointMaps();
 }
 
 template <class Archive>
