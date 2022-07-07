@@ -18,33 +18,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_srdf/groups.h>
 #include <tesseract_srdf/srdf_model.h>
 #include <tesseract_srdf/utils.h>
-
-std::string locateResource(const std::string& url)
-{
-  std::string mod_url = url;
-  if (url.find("package://tesseract_support") == 0)
-  {
-    mod_url.erase(0, strlen("package://tesseract_support"));
-    size_t pos = mod_url.find('/');
-    if (pos == std::string::npos)
-    {
-      return std::string();
-    }
-
-    std::string package = mod_url.substr(0, pos);
-    mod_url.erase(0, pos);
-    std::string package_path = std::string(TESSERACT_SUPPORT_DIR);
-
-    if (package_path.empty())
-    {
-      return std::string();
-    }
-
-    mod_url = package_path + mod_url;
-  }
-
-  return mod_url;
-}
+#include <tesseract_support/tesseract_support_resource_locator.h>
 
 enum class ABBConfig
 {
@@ -261,7 +235,7 @@ TEST(TesseractSRDFUnit, LoadSRDFFileUnit)  // NOLINT
 
   std::string srdf_file = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.srdf";
 
-  SimpleResourceLocator locator(locateResource);
+  TesseractSupportResourceLocator locator;
   SceneGraph g;
 
   g.setName("kuka_lbr_iiwa_14_r820");
@@ -376,7 +350,7 @@ TEST(TesseractSRDFUnit, TesseractSRDFModelUnit)  // NOLINT
   using namespace tesseract_srdf;
   using namespace tesseract_common;
 
-  SimpleResourceLocator locator(locateResource);
+  TesseractSupportResourceLocator locator;
   SRDFModel srdf;
 
   // Set Name
@@ -468,7 +442,7 @@ TEST(TesseractSRDFUnit, LoadSRDFFailureCasesUnit)  // NOLINT
   using namespace tesseract_srdf;
   using namespace tesseract_common;
 
-  SimpleResourceLocator locator(locateResource);
+  TesseractSupportResourceLocator locator;
   SceneGraph::Ptr g = getABBSceneGraph();
 
   std::string xml_string =
@@ -535,6 +509,23 @@ TEST(TesseractSRDFUnit, LoadSRDFFailureCasesUnit)  // NOLINT
     EXPECT_ANY_THROW(srdf.initFile(*g, "/tmp/file_does_not_exist.srdf", locator));  // NOLINT
   }
 }
+
+class TempResourceLocator : public tesseract_common::ResourceLocator
+{
+public:
+  std::shared_ptr<tesseract_common::Resource> locateResource(const std::string& url) const override final
+  {
+    tesseract_common::fs::path mod_url(url);
+    if (!mod_url.is_absolute())
+    {
+      mod_url = tesseract_common::fs::path(tesseract_common::getTempPath() + url);
+    }
+
+    return std::make_shared<tesseract_common::SimpleLocatedResource>(
+        url, mod_url.string(), std::make_shared<TempResourceLocator>(*this));
+  }
+};
+
 TEST(TesseractSRDFUnit, LoadSRDFSaveUnit)  // NOLINT
 {
   using namespace tesseract_scene_graph;
@@ -542,7 +533,7 @@ TEST(TesseractSRDFUnit, LoadSRDFSaveUnit)  // NOLINT
   using namespace tesseract_common;
 
   SceneGraph::Ptr g = getABBSceneGraph(ABBConfig::ROBOT_ON_RAIL);
-  SimpleResourceLocator locator(locateResource);
+  TempResourceLocator locator;
 
   std::string xml_string =
       R"(<robot name="abb_irb2400" version="1.0.0">
@@ -1680,7 +1671,7 @@ TEST(TesseractSRDFUnit, AddRemoveGroupTCPUnit)  // NOLINT
 TEST(TesseractSRDFUnit, ParseConfigFilePathUnit)  // NOLINT
 {
   std::array<int, 3> version{ 1, 0, 0 };
-  tesseract_common::SimpleResourceLocator locator(locateResource);
+  tesseract_common::TesseractSupportResourceLocator locator;
 
   {  // valid
     std::string str =
@@ -1738,7 +1729,7 @@ TEST(TesseractSRDFUnit, ParseConfigFilePathUnit)  // NOLINT
 TEST(TesseractSRDFUnit, ParseContactManagersPluginConfigUnit)  // NOLINT
 {
   std::array<int, 3> version{ 1, 0, 0 };
-  tesseract_common::SimpleResourceLocator locator(locateResource);
+  tesseract_common::TesseractSupportResourceLocator locator;
   tesseract_scene_graph::SceneGraph::Ptr g = getABBSceneGraph();
 
   {  // valid
@@ -1786,7 +1777,7 @@ TEST(TesseractSRDFUnit, ParseContactManagersPluginConfigUnit)  // NOLINT
 TEST(TesseractSRDFUnit, ParseKinematicsPluginConfigUnit)  // NOLINT
 {
   std::array<int, 3> version{ 1, 0, 0 };
-  tesseract_common::SimpleResourceLocator locator(locateResource);
+  tesseract_common::TesseractSupportResourceLocator locator;
   tesseract_scene_graph::SceneGraph::Ptr g = getABBSceneGraph();
 
   {  // valid
@@ -1833,7 +1824,7 @@ TEST(TesseractSRDFUnit, ParseKinematicsPluginConfigUnit)  // NOLINT
 TEST(TesseractSRDFUnit, ParseCalibrationConfigUnit)  // NOLINT
 {
   std::array<int, 3> version{ 1, 0, 0 };
-  tesseract_common::SimpleResourceLocator locator(locateResource);
+  tesseract_common::TesseractSupportResourceLocator locator;
   tesseract_scene_graph::SceneGraph::Ptr g = getABBSceneGraph();
 
   {  // valid
