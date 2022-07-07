@@ -66,6 +66,7 @@ target_clang_tidy(${PROJECT_NAME} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME} PUBLIC VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(
   ${PROJECT_NAME}
+  PRIVATE
   ALL
   EXCLUDE ${COVERAGE_EXCLUDE}
   ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
@@ -115,6 +116,7 @@ target_clang_tidy(${PROJECT_NAME}_commands ENABLE ${TESSERACT_ENABLE_CLANG_TIDY}
 target_cxx_version(${PROJECT_NAME}_commands PUBLIC VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(
   ${PROJECT_NAME}_commands
+  PRIVATE
   ALL
   EXCLUDE ${COVERAGE_EXCLUDE}
   ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
@@ -149,16 +151,8 @@ if(TESSERACT_PACKAGE)
     LICENSE_FILE ${CMAKE_CURRENT_LIST_DIR}/../LICENSE
     README_FILE ${CMAKE_CURRENT_LIST_DIR}/../README.md
     LINUX_DEPENDS
-      "${TESSERACT_PACKAGE_PREFIX}tesseract-collision"
-      "${TESSERACT_PACKAGE_PREFIX}tesseract-geometry"
-      "${TESSERACT_PACKAGE_PREFIX}tesseract-kinematics"
-      "${TESSERACT_PACKAGE_PREFIX}tesseract-scene-graph"
-      "${TESSERACT_PACKAGE_PREFIX}tesseract-state-solver"
-      "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
-      "${TESSERACT_PACKAGE_PREFIX}tesseract-urdf"
       "libconsole-bridge-dev"
       "libeigen3-dev"
-    WINDOWS_DEPENDS
       "${TESSERACT_PACKAGE_PREFIX}tesseract-collision"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-geometry"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-kinematics"
@@ -166,6 +160,16 @@ if(TESSERACT_PACKAGE)
       "${TESSERACT_PACKAGE_PREFIX}tesseract-state-solver"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-urdf"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-srdf"
+    WINDOWS_DEPENDS
       "console_bridge"
-      "Eigen3")
+      "Eigen3"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-collision"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-geometry"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-kinematics"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-scene-graph"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-state-solver"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-urdf"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-srdf")
 endif()
