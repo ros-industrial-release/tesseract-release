@@ -2,6 +2,83 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.10.0 (2022-07-06)
+-------------------
+* Update ros_industrial_cmake_boilerplate to 0.3.0 (`#795 <https://github.com/tesseract-robotics/tesseract/issues/795>`_)
+* Static plugin loading using symbol module resolution (`#782 <https://github.com/tesseract-robotics/tesseract/issues/782>`_)
+
+0.9.11 (2022-06-30)
+-------------------
+* Renames in type erasure to avoid WIN32 defines
+* Updated CPack (`#786 <https://github.com/tesseract-robotics/tesseract/issues/786>`_)
+* Update to use find_gtest macro
+* Fix message in type_erasure.h
+* Contributors: John Wason, Levi Armstrong, Michael Ripperger
+
+0.9.10 (2022-06-14)
+-------------------
+* Add type erasure interface (`#776 <https://github.com/tesseract-robotics/tesseract/issues/776>`_)
+  * Add type erasure interface
+  * revert change to type erasure constructor
+* Update FindTinyXML2.cmake
+* Contributors: Levi Armstrong
+
+0.9.9 (2022-05-30)
+------------------
+* Fix find tcmalloc on melodic
+* Contributors: Levi Armstrong
+
+0.9.8 (2022-05-30)
+------------------
+* Fix Findtcmalloc_minimal.cmake
+* Contributors: Levi Armstrong
+
+0.9.7 (2022-05-30)
+------------------
+* Update Findtcmalloc.cmake to include threads and split out tcmalloc_minimal to Findtcmalloc_minimal.cmake
+* Contributors: Levi Armstrong
+
+0.9.6 (2022-05-02)
+------------------
+* Normalize quaternion when decoding yaml Eigen::Isometry3d
+* Contributors: Levi Armstrong
+
+0.9.5 (2022-04-24)
+------------------
+* yaml_utils.h nullptr comparison fixup (`#755 <https://github.com/tesseract-robotics/tesseract/issues/755>`_)
+* Fix JointTrajectory SWIG container (`#756 <https://github.com/tesseract-robotics/tesseract/issues/756>`_)
+* Contributors: John Wason
+
+0.9.4 (2022-04-22)
+------------------
+* Windows fixes with passing unit tests (`#751 <https://github.com/tesseract-robotics/tesseract/issues/751>`_)
+  * Fix bug in OFKTStateSolver::moveLinkHelper
+  * Use binary ifstream ond ofstream in serialization.h
+  * Add c++17 flag to windows_noetic_build.yml
+  * Fix SceneGraph move constructor, restore modified unit tests
+* Contributors: John Wason
+
+0.9.3 (2022-04-18)
+------------------
+* Make JointTrajectory a struct
+* Add environment serialization
+* Updated plugin capability to support sections (`#741 <https://github.com/tesseract-robotics/tesseract/issues/741>`_)
+* Contributors: Levi Armstrong
+
+0.9.2 (2022-04-03)
+------------------
+
+0.9.1 (2022-04-01)
+------------------
+
+0.9.0 (2022-03-31)
+------------------
+* Make ResourceLocator serializable
+* Contributors: Levi Armstrong
+
+0.8.7 (2022-03-24)
+------------------
+
 0.8.6 (2022-03-24)
 ------------------
 * Add atomic serialization
