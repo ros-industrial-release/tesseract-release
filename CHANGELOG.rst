@@ -2,6 +2,60 @@
 Changelog for package tesseract_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.10.0 (2022-07-06)
+-------------------
+* Update ros_industrial_cmake_boilerplate to 0.3.0 (`#795 <https://github.com/tesseract-robotics/tesseract/issues/795>`_)
+
+0.9.11 (2022-06-30)
+-------------------
+* Update to use find_gtest macro
+* Add missing gtest test_depend to tesseract_support
+* Contributors: Levi Armstrong
+
+0.9.10 (2022-06-14)
+-------------------
+
+0.9.9 (2022-05-30)
+------------------
+
+0.9.8 (2022-05-30)
+------------------
+
+0.9.7 (2022-05-30)
+------------------
+
+0.9.6 (2022-05-02)
+------------------
+* Add fwd_kin_plugins to abb_irb2400_plugins.yaml
+* Contributors: John Wason
+
+0.9.5 (2022-04-24)
+------------------
+
+0.9.4 (2022-04-22)
+------------------
+
+0.9.3 (2022-04-18)
+------------------
+
+0.9.2 (2022-04-03)
+------------------
+
+0.9.1 (2022-04-01)
+------------------
+* Generate urdf files
+* Consolidate all resources into tesseract_support
+* Contributors: Levi Armstrong
+
+0.9.0 (2022-03-31)
+------------------
+* Make ResourceLocator serializable
+* Add tcp to iiwa srdf
+* Contributors: Levi Armstrong
+
+0.8.7 (2022-03-24)
+------------------
+
 0.8.6 (2022-03-24)
 ------------------
 
