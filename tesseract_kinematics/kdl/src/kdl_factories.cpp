@@ -121,11 +121,13 @@ InverseKinematics::UPtr KDLInvKinChainNRFactory::create(const std::string& solve
   return std::make_unique<KDLInvKinChainNR>(scene_graph, base_link, tip_link, solver_name);
 }
 
+TESSERACT_PLUGIN_ANCHOR_IMPL(KDLFactoriesAnchor)
+
 }  // namespace tesseract_kinematics
 
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-TESSERACT_ADD_PLUGIN(tesseract_kinematics::KDLFwdKinChainFactory, KDLFwdKinChainFactory);
+TESSERACT_ADD_FWD_KIN_PLUGIN(tesseract_kinematics::KDLFwdKinChainFactory, KDLFwdKinChainFactory);
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-TESSERACT_ADD_PLUGIN(tesseract_kinematics::KDLInvKinChainLMAFactory, KDLInvKinChainLMAFactory);
+TESSERACT_ADD_INV_KIN_PLUGIN(tesseract_kinematics::KDLInvKinChainLMAFactory, KDLInvKinChainLMAFactory);
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-TESSERACT_ADD_PLUGIN(tesseract_kinematics::KDLInvKinChainNRFactory, KDLInvKinChainNRFactory);
+TESSERACT_ADD_INV_KIN_PLUGIN(tesseract_kinematics::KDLInvKinChainNRFactory, KDLInvKinChainNRFactory);

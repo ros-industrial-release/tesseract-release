@@ -2,6 +2,63 @@
 Changelog for package tesseract_urdf
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.10.0 (2022-07-06)
+-------------------
+* Update ros_industrial_cmake_boilerplate to 0.3.0 (`#795 <https://github.com/tesseract-robotics/tesseract/issues/795>`_)
+
+0.9.11 (2022-06-30)
+-------------------
+* Updated CPack (`#786 <https://github.com/tesseract-robotics/tesseract/issues/786>`_)
+* Update to use find_gtest macro
+* Contributors: Levi Armstrong, Michael Ripperger
+
+0.9.10 (2022-06-14)
+-------------------
+
+0.9.9 (2022-05-30)
+------------------
+
+0.9.8 (2022-05-30)
+------------------
+
+0.9.7 (2022-05-30)
+------------------
+
+0.9.6 (2022-05-02)
+------------------
+
+0.9.5 (2022-04-24)
+------------------
+
+0.9.4 (2022-04-22)
+------------------
+* Use components for PCL (`#752 <https://github.com/tesseract-robotics/tesseract/issues/752>`_)
+  * Find components common and io for PCL
+  * Include PCL_INCLUDE_DIRS if target not available
+* Windows fixes with passing unit tests (`#751 <https://github.com/tesseract-robotics/tesseract/issues/751>`_)
+  * Fix bug in OFKTStateSolver::moveLinkHelper
+  * Use binary ifstream ond ofstream in serialization.h
+  * Add c++17 flag to windows_noetic_build.yml
+  * Fix SceneGraph move constructor, restore modified unit tests
+* Contributors: John Wason
+
+0.9.3 (2022-04-18)
+------------------
+
+0.9.2 (2022-04-03)
+------------------
+
+0.9.1 (2022-04-01)
+------------------
+
+0.9.0 (2022-03-31)
+------------------
+* Make ResourceLocator serializable
+* Contributors: Levi Armstrong
+
+0.8.7 (2022-03-24)
+------------------
+
 0.8.6 (2022-03-24)
 ------------------
 
