@@ -45,6 +45,14 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 %shared_ptr(tesseract_collision::ContinuousContactManagerFactory)
 #endif  // SWIG
 
+// clang-format off
+#define TESSERACT_ADD_DISCRETE_MANAGER_PLUGIN(DERIVED_CLASS, ALIAS)                                                    \
+  TESSERACT_ADD_PLUGIN_SECTIONED(DERIVED_CLASS, ALIAS, DiscColl)
+
+#define TESSERACT_ADD_CONTINUOUS_MANAGER_PLUGIN(DERIVED_CLASS, ALIAS)                                                  \
+  TESSERACT_ADD_PLUGIN_SECTIONED(DERIVED_CLASS, ALIAS, ContColl)
+// clang-format on
+
 namespace tesseract_collision
 {
 /** @brief Forward declare Plugin Factory */
@@ -65,6 +73,10 @@ public:
    * @return If failed to create, nullptr is returned.
    */
   virtual DiscreteContactManager::UPtr create(const std::string& name, const YAML::Node& config) const = 0;
+
+protected:
+  static const std::string SECTION_NAME;
+  friend class PluginLoader;
 };
 
 /** @brief Define a continuous contact manager plugin which the factory can create an instance */
@@ -82,6 +94,10 @@ public:
    * @return If failed to create, nullptr is returned.
    */
   virtual ContinuousContactManager::UPtr create(const std::string& solver_name, const YAML::Node& config) const = 0;
+
+protected:
+  static const std::string SECTION_NAME;
+  friend class PluginLoader;
 };
 
 class ContactManagersPluginFactory
@@ -125,6 +141,12 @@ public:
   std::set<std::string> getSearchPaths() const;
 
   /**
+   * @brief Clear the search paths
+   *
+   */
+  void clearSearchPaths();
+
+  /**
    * @brief Add a library to search for plugin name
    * @param library_name The library name without the prefix or suffix
    */
@@ -137,11 +159,23 @@ public:
   std::set<std::string> getSearchLibraries() const;
 
   /**
+   * @brief Clean the search libraries
+   *
+   */
+  void clearSearchLibraries();
+
+  /**
    * @brief Add a discrete contact manager plugin
    * @param name The name
    * @param plugin_info The plugin information
    */
   void addDiscreteContactManagerPlugin(const std::string& name, tesseract_common::PluginInfo plugin_info);
+
+  /**
+   * @brief Check if it has discrete contact manager plugins
+   * @return True if discrete PluginInfoMap is not empty, otherwise fale
+   */
+  bool hasDiscreteContactManagerPlugins() const;
 
   /**
    * @brief Get the map of discrete contact manager plugin
@@ -173,6 +207,12 @@ public:
    * @param plugin_info The plugin information
    */
   void addContinuousContactManagerPlugin(const std::string& name, tesseract_common::PluginInfo plugin_info);
+
+  /**
+   * @brief Check if it has continuous contact manager plugins
+   * @return True if continuous PluginInfoMap is not empty, otherwise fale
+   */
+  bool hasContinuousContactManagerPlugins() const;
 
   /**
    * @brief Get the map of continuous contact manager plugin
