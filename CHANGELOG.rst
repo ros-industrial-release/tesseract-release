@@ -2,6 +2,63 @@
 Changelog for package tesseract_collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.10.0 (2022-07-06)
+-------------------
+* Update ros_industrial_cmake_boilerplate to 0.3.0 (`#795 <https://github.com/tesseract-robotics/tesseract/issues/795>`_)
+* Static plugin loading using symbol module resolution (`#782 <https://github.com/tesseract-robotics/tesseract/issues/782>`_)
+
+0.9.11 (2022-06-30)
+-------------------
+* Updated CPack (`#786 <https://github.com/tesseract-robotics/tesseract/issues/786>`_)
+* Fix benchmark CI
+* Minor fixes
+* Update to use find_gtest macro
+* Contributors: Levi Armstrong, Michael Ripperger
+
+0.9.10 (2022-06-14)
+-------------------
+
+0.9.9 (2022-05-30)
+------------------
+
+0.9.8 (2022-05-30)
+------------------
+
+0.9.7 (2022-05-30)
+------------------
+* Reduce bullet octomap storage
+* Allow not providing contact manager plugins
+* Contributors: Levi Armstrong
+
+0.9.6 (2022-05-02)
+------------------
+
+0.9.5 (2022-04-24)
+------------------
+
+0.9.4 (2022-04-22)
+------------------
+
+0.9.3 (2022-04-18)
+------------------
+* Fix invalid iterator in bullet_cast_simple_manager (`#746 <https://github.com/tesseract-robotics/tesseract/issues/746>`_)
+  * Fix invalid iterator in bullet_cast_simple_manager
+  * clang format
+* Updated plugin capability to support sections (`#741 <https://github.com/tesseract-robotics/tesseract/issues/741>`_)
+* Contributors: John Wason, Levi Armstrong
+
+0.9.2 (2022-04-03)
+------------------
+
+0.9.1 (2022-04-01)
+------------------
+
+0.9.0 (2022-03-31)
+------------------
+
+0.8.7 (2022-03-24)
+------------------
+
 0.8.6 (2022-03-24)
 ------------------
 

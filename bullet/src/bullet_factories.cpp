@@ -56,17 +56,20 @@ ContinuousContactManager::UPtr BulletCastSimpleManagerFactory::create(const std:
   return std::make_unique<BulletCastSimpleManager>(name);
 }
 
+TESSERACT_PLUGIN_ANCHOR_IMPL(BulletFactoriesAnchor)
+
 }  // namespace tesseract_collision::tesseract_collision_bullet
 
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-TESSERACT_ADD_PLUGIN(tesseract_collision::tesseract_collision_bullet::BulletDiscreteBVHManagerFactory,
-                     BulletDiscreteBVHManagerFactory);
+TESSERACT_ADD_DISCRETE_MANAGER_PLUGIN(tesseract_collision::tesseract_collision_bullet::BulletDiscreteBVHManagerFactory,
+                                      BulletDiscreteBVHManagerFactory);
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-TESSERACT_ADD_PLUGIN(tesseract_collision::tesseract_collision_bullet::BulletDiscreteSimpleManagerFactory,
-                     BulletDiscreteSimpleManagerFactory);
+TESSERACT_ADD_DISCRETE_MANAGER_PLUGIN(
+    tesseract_collision::tesseract_collision_bullet::BulletDiscreteSimpleManagerFactory,
+    BulletDiscreteSimpleManagerFactory);
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-TESSERACT_ADD_PLUGIN(tesseract_collision::tesseract_collision_bullet::BulletCastBVHManagerFactory,
-                     BulletCastBVHManagerFactory);
+TESSERACT_ADD_CONTINUOUS_MANAGER_PLUGIN(tesseract_collision::tesseract_collision_bullet::BulletCastBVHManagerFactory,
+                                        BulletCastBVHManagerFactory);
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-TESSERACT_ADD_PLUGIN(tesseract_collision::tesseract_collision_bullet::BulletCastSimpleManagerFactory,
-                     BulletCastSimpleManagerFactory);
+TESSERACT_ADD_CONTINUOUS_MANAGER_PLUGIN(tesseract_collision::tesseract_collision_bullet::BulletCastSimpleManagerFactory,
+                                        BulletCastSimpleManagerFactory);

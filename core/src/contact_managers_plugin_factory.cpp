@@ -33,13 +33,17 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/yaml_utils.h>
 #include <tesseract_collision/core/contact_managers_plugin_factory.h>
 
-const std::string TESSERACT_CONTACT_MANAGERS_PLUGIN_DIRECTORIES_ENV = "TESSERACT_CONTACT_MANAGERS_PLUGIN_DIRECTORIES";
-const std::string TESSERACT_CONTACT_MANAGERS_PLUGINS_ENV = "TESSERACT_CONTACT_MANAGERS_PLUGINS";
+static const std::string TESSERACT_CONTACT_MANAGERS_PLUGIN_DIRECTORIES_ENV = "TESSERACT_CONTACT_MANAGERS_PLUGIN_"
+                                                                             "DIRECTORIES";
+static const std::string TESSERACT_CONTACT_MANAGERS_PLUGINS_ENV = "TESSERACT_CONTACT_MANAGERS_PLUGINS";
 
 using tesseract_common::ContactManagersPluginInfo;
 
 namespace tesseract_collision
 {
+const std::string DiscreteContactManagerFactory::SECTION_NAME = "DiscColl";
+const std::string ContinuousContactManagerFactory::SECTION_NAME = "ContColl";
+
 ContactManagersPluginFactory::ContactManagersPluginFactory()
 {
   plugin_loader_.search_libraries_env = TESSERACT_CONTACT_MANAGERS_PLUGINS_ENV;
@@ -82,6 +86,8 @@ void ContactManagersPluginFactory::addSearchPath(const std::string& path) { plug
 
 std::set<std::string> ContactManagersPluginFactory::getSearchPaths() const { return plugin_loader_.search_paths; }
 
+void ContactManagersPluginFactory::clearSearchPaths() { plugin_loader_.search_paths.clear(); }
+
 void ContactManagersPluginFactory::addSearchLibrary(const std::string& library_name)
 {
   plugin_loader_.search_libraries.insert(library_name);
@@ -92,10 +98,17 @@ std::set<std::string> ContactManagersPluginFactory::getSearchLibraries() const
   return plugin_loader_.search_libraries;
 }
 
+void ContactManagersPluginFactory::clearSearchLibraries() { plugin_loader_.search_libraries.clear(); }
+
 void ContactManagersPluginFactory::addDiscreteContactManagerPlugin(const std::string& name,
                                                                    tesseract_common::PluginInfo plugin_info)
 {
   discrete_plugin_info_.plugins[name] = std::move(plugin_info);
+}
+
+bool ContactManagersPluginFactory::hasDiscreteContactManagerPlugins() const
+{
+  return !discrete_plugin_info_.plugins.empty();
 }
 
 tesseract_common::PluginInfoMap ContactManagersPluginFactory::getDiscreteContactManagerPlugins() const
@@ -142,6 +155,11 @@ void ContactManagersPluginFactory::addContinuousContactManagerPlugin(const std::
                                                                      tesseract_common::PluginInfo plugin_info)
 {
   continuous_plugin_info_.plugins[name] = std::move(plugin_info);
+}
+
+bool ContactManagersPluginFactory::hasContinuousContactManagerPlugins() const
+{
+  return !continuous_plugin_info_.plugins.empty();
 }
 
 tesseract_common::PluginInfoMap ContactManagersPluginFactory::getContinuousContactManagerPlugins() const
