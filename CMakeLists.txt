@@ -86,6 +86,7 @@ target_clang_tidy(${PROJECT_NAME} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME} PUBLIC VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(
   ${PROJECT_NAME}
+  PRIVATE
   ALL
   EXCLUDE ${COVERAGE_EXCLUDE}
   ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
@@ -111,6 +112,7 @@ if(IGNITION_FOUND)
   target_cxx_version(${PROJECT_NAME}_ignition PUBLIC VERSION ${TESSERACT_CXX_VERSION})
   target_code_coverage(
     ${PROJECT_NAME}_ignition
+    PRIVATE
     ALL
     EXCLUDE ${COVERAGE_EXCLUDE}
     ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
@@ -137,6 +139,7 @@ if(IGNITION_FOUND)
   target_cxx_version(${PROJECT_NAME}_ignition_visualization PUBLIC VERSION ${TESSERACT_CXX_VERSION})
   target_code_coverage(
     ${PROJECT_NAME}_ignition_visualization
+    PRIVATE
     ALL
     EXCLUDE ${COVERAGE_EXCLUDE}
     ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
@@ -193,18 +196,19 @@ if(TESSERACT_PACKAGE)
     LICENSE_FILE ${CMAKE_CURRENT_LIST_DIR}/../LICENSE
     README_FILE ${CMAKE_CURRENT_LIST_DIR}/../README.md
     LINUX_DEPENDS
-      "${TESSERACT_PACKAGE_PREFIX}tesseract-collision"
-      "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
-      "${TESSERACT_PACKAGE_PREFIX}tesseract-environment"
-      "${TESSERACT_PACKAGE_PREFIX}tesseract-scene-graph"
-      "${TESSERACT_PACKAGE_PREFIX}tesseract-state-solver"
       "libconsole-bridge-dev"
       "libeigen3-dev"
-    WINDOWS_DEPENDS
       "${TESSERACT_PACKAGE_PREFIX}tesseract-collision"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-environment"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-scene-graph"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-state-solver"
-      "Eigen3")
+    WINDOWS_DEPENDS
+      "console-bridge"
+      "Eigen3"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-collision"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-environment"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-scene-graph"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-state-solver")
 endif()
