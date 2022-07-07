@@ -7,11 +7,12 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_geometry/impl/box.h>
 #include <tesseract_urdf/box.h>
 #include <tesseract_urdf/link.h>
+#include <tesseract_support/tesseract_support_resource_locator.h>
 #include "tesseract_urdf_common_unit.h"
 
 TEST(TesseractURDFUnit, parse_link)  // NOLINT
 {
-  tesseract_common::SimpleResourceLocator resource_locator(locateResource);
+  tesseract_common::TesseractSupportResourceLocator resource_locator;
 
   {
     std::unordered_map<std::string, tesseract_scene_graph::Material::Ptr> empty_available_materials;
@@ -370,8 +371,9 @@ TEST(TesseractURDFUnit, write_link)  // NOLINT
     link->visual.push_back(visual);
 
     std::string text;
-    EXPECT_EQ(
-        0, writeTest<tesseract_scene_graph::Link::Ptr>(link, &tesseract_urdf::writeLink, text, std::string("/tmp/")));
+    EXPECT_EQ(0,
+              writeTest<tesseract_scene_graph::Link::Ptr>(
+                  link, &tesseract_urdf::writeLink, text, tesseract_common::getTempPath()));
     EXPECT_NE(text, "");
   }
 
@@ -388,8 +390,9 @@ TEST(TesseractURDFUnit, write_link)  // NOLINT
     link->visual.push_back(visual);
 
     std::string text;
-    EXPECT_EQ(
-        1, writeTest<tesseract_scene_graph::Link::Ptr>(link, &tesseract_urdf::writeLink, text, std::string("/tmp/")));
+    EXPECT_EQ(1,
+              writeTest<tesseract_scene_graph::Link::Ptr>(
+                  link, &tesseract_urdf::writeLink, text, tesseract_common::getTempPath()));
     EXPECT_EQ(text, "");
   }
 
@@ -406,16 +409,18 @@ TEST(TesseractURDFUnit, write_link)  // NOLINT
     link->visual.push_back(nullptr);
 
     std::string text;
-    EXPECT_EQ(
-        1, writeTest<tesseract_scene_graph::Link::Ptr>(link, &tesseract_urdf::writeLink, text, std::string("/tmp/")));
+    EXPECT_EQ(1,
+              writeTest<tesseract_scene_graph::Link::Ptr>(
+                  link, &tesseract_urdf::writeLink, text, tesseract_common::getTempPath()));
     EXPECT_EQ(text, "");
   }
 
   {
     tesseract_scene_graph::Link::Ptr link = nullptr;
     std::string text;
-    EXPECT_EQ(
-        1, writeTest<tesseract_scene_graph::Link::Ptr>(link, &tesseract_urdf::writeLink, text, std::string("/tmp/")));
+    EXPECT_EQ(1,
+              writeTest<tesseract_scene_graph::Link::Ptr>(
+                  link, &tesseract_urdf::writeLink, text, tesseract_common::getTempPath()));
     EXPECT_EQ(text, "");
   }
 }

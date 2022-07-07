@@ -6,11 +6,23 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_urdf/convex_mesh.h>
 #include <tesseract_geometry/impl/convex_mesh.h>
+#include <tesseract_support/tesseract_support_resource_locator.h>
 #include "tesseract_urdf_common_unit.h"
+
+static std::string getTempPkgPath()
+{
+  std::string tmp = tesseract_common::getTempPath();
+  std::string tmppkg = tmp + "tmppkg";
+  if (!tesseract_common::fs::is_directory(tmppkg) || !tesseract_common::fs::exists(tmppkg))
+  {
+    tesseract_common::fs::create_directory(tmppkg);
+  }
+  return tmppkg;
+}
 
 TEST(TesseractURDFUnit, parse_convex_mesh)  // NOLINT
 {
-  tesseract_common::SimpleResourceLocator resource_locator(locateResource);
+  tesseract_common::TesseractSupportResourceLocator resource_locator;
   {
     std::string str =
         R"(<convex_mesh filename="package://tesseract_support/meshes/box_2m.ply" scale="1 2 1" extra="0 0 0"/>)";
@@ -173,11 +185,10 @@ TEST(TesseractURDFUnit, write_convex_mesh)  // NOLINT
     tesseract_geometry::ConvexMesh::Ptr convex_mesh = std::make_shared<tesseract_geometry::ConvexMesh>(
         std::make_shared<tesseract_common::VectorVector3d>(vertices), std::make_shared<Eigen::VectorXi>(indices));
     std::string text;
-    EXPECT_EQ(
-        0,
-        writeTest<tesseract_geometry::ConvexMesh::Ptr>(
-            convex_mesh, &tesseract_urdf::writeConvexMesh, text, std::string("/tmp/"), std::string("convex0.ply")));
-    EXPECT_EQ(text, R"(<convex_mesh filename="package://tmp/convex0.ply" convert="false"/>)");
+    EXPECT_EQ(0,
+              writeTest<tesseract_geometry::ConvexMesh::Ptr>(
+                  convex_mesh, &tesseract_urdf::writeConvexMesh, text, getTempPkgPath(), std::string("convex0.ply")));
+    EXPECT_EQ(text, R"(<convex_mesh filename="package://tmppkg/convex0.ply" convert="false"/>)");
   }
 
   {
@@ -189,19 +200,22 @@ TEST(TesseractURDFUnit, write_convex_mesh)  // NOLINT
     tesseract_geometry::ConvexMesh::Ptr convex_mesh = std::make_shared<tesseract_geometry::ConvexMesh>(
         std::make_shared<tesseract_common::VectorVector3d>(vertices), std::make_shared<Eigen::VectorXi>(indices));
     std::string text;
-    EXPECT_EQ(1,
-              writeTest<tesseract_geometry::ConvexMesh::Ptr>(
-                  convex_mesh, &tesseract_urdf::writeConvexMesh, text, std::string("/tmp/"), std::string("")));
+    EXPECT_EQ(
+        1,
+        writeTest<tesseract_geometry::ConvexMesh::Ptr>(
+            convex_mesh, &tesseract_urdf::writeConvexMesh, text, tesseract_common::getTempPath(), std::string("")));
     EXPECT_EQ(text, "");
   }
 
   {
     tesseract_geometry::ConvexMesh::Ptr convex_mesh = nullptr;
     std::string text;
-    EXPECT_EQ(
-        1,
-        writeTest<tesseract_geometry::ConvexMesh::Ptr>(
-            convex_mesh, &tesseract_urdf::writeConvexMesh, text, std::string("/tmp/"), std::string("convex1.ply")));
+    EXPECT_EQ(1,
+              writeTest<tesseract_geometry::ConvexMesh::Ptr>(convex_mesh,
+                                                             &tesseract_urdf::writeConvexMesh,
+                                                             text,
+                                                             tesseract_common::getTempPath(),
+                                                             std::string("convex1.ply")));
     EXPECT_EQ(text, "");
   }
 }
