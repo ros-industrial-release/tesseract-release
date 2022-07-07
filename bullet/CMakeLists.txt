@@ -27,11 +27,6 @@ else()
   set(BULLET_LIBRARY_DIRS_ABS ${BULLET_LIBRARY_DIRS})
 endif()
 
-if(WIN32) # This was required for windows to find things in tesseract_ext before the system which is an issue in ros-win
-  include_directories(BEFORE "${BULLET_INCLUDE_DIRS_ABS}")
-  link_directories(BEFORE "${BULLET_LIBRARY_DIRS_ABS}")
-endif()
-
 find_library(HACD_LIBRARY HACD HINTS ${BULLET_LIBRARY_DIRS_ABS})
 if(NOT HACD_LIBRARY)
   message(
@@ -68,6 +63,7 @@ target_clang_tidy(${PROJECT_NAME}_bullet ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME}_bullet PUBLIC VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(
   ${PROJECT_NAME}_bullet
+  PRIVATE
   ALL
   EXCLUDE ${COVERAGE_EXCLUDE}
   ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
@@ -86,6 +82,7 @@ target_clang_tidy(${PROJECT_NAME}_bullet_factories ENABLE ${TESSERACT_ENABLE_CLA
 target_cxx_version(${PROJECT_NAME}_bullet_factories PUBLIC VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(
   ${PROJECT_NAME}_bullet_factories
+  PRIVATE
   ALL
   EXCLUDE ${COVERAGE_EXCLUDE}
   ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
@@ -113,6 +110,7 @@ if(${HACD_LIBRARY})
   target_cxx_version(${PROJECT_NAME}_hacd_convex_decomposition PUBLIC VERSION ${TESSERACT_CXX_VERSION})
   target_code_coverage(
     ${PROJECT_NAME}_hacd_convex_decomposition
+    PRIVATE
     ALL
     EXCLUDE ${COVERAGE_EXCLUDE}
     ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
