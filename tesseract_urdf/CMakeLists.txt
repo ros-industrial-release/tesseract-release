@@ -12,7 +12,7 @@ endif()
 find_package(Boost REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(console_bridge REQUIRED)
-find_package(PCL REQUIRED)
+find_package(PCL REQUIRED COMPONENTS common io)
 find_package(tesseract_geometry REQUIRED)
 find_package(tesseract_common REQUIRED)
 find_package(tesseract_scene_graph REQUIRED)
@@ -88,6 +88,7 @@ target_clang_tidy(${PROJECT_NAME} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME} PUBLIC VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(
   ${PROJECT_NAME}
+  PRIVATE
   ALL
   EXCLUDE ${COVERAGE_EXCLUDE}
   ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
@@ -101,7 +102,7 @@ else(TESSERACT_Boost_VERSION_MACRO ${Boost_VERSION_MACRO})
   set(TESSERACT_Boost_VERSION_MACRO ${Boost_VERSION})
 endif()
 if(TESSERACT_Boost_VERSION_MACRO VERSION_GREATER "106000")
-  target_link_libraries(${PROJECT_NAME} PUBLIC ${PCL_LIBRARIES})
+  target_link_libraries(${PROJECT_NAME} PUBLIC ${PCL_IO_LIBRARIES} ${PCL_COMMON_LIBRARIES})
   target_compile_definitions(${PROJECT_NAME} PUBLIC TESSERACT_PARSE_POINT_CLOUDS="ON")
   foreach(DEF ${PCL_DEFINITIONS})
     string(STRIP ${DEF} DEF)
@@ -128,7 +129,9 @@ if(TESSERACT_Boost_VERSION_MACRO VERSION_GREATER "106000")
       endif()
     endif()
   endforeach()
-  target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${PCL_INCLUDE_DIRS})
+  if(NOT TARGET pcl_common)
+    target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${PCL_INCLUDE_DIRS})
+  endif()
 endif()
 
 target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
@@ -159,16 +162,19 @@ if(TESSERACT_PACKAGE)
     LICENSE_FILE ${CMAKE_CURRENT_LIST_DIR}/../LICENSE
     README_FILE ${CMAKE_CURRENT_LIST_DIR}/../README.md
     LINUX_DEPENDS
-      "${TESSERACT_PACKAGE_PREFIX}tesseract-collision"
-      "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
-      "${TESSERACT_PACKAGE_PREFIX}tesseract-geometry"
-      "${TESSERACT_PACKAGE_PREFIX}tesseract-scene-graph"
       "libconsole-bridge-dev"
       "libeigen3-dev"
-    WINDOWS_DEPENDS
+      "libpcl-dev"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-collision"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-geometry"
       "${TESSERACT_PACKAGE_PREFIX}tesseract-scene-graph"
-      "Eigen3")
+    WINDOWS_DEPENDS
+      "console-bridge"
+      "Eigen3"
+      "pcl"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-collision"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-geometry"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-scene-graph")
 endif()
