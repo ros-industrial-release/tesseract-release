@@ -1,0 +1,12 @@
+Source: ros-noetic-tesseract-scene-graph
+Section: misc
+Priority: optional
+Maintainer: Levi Armstrong <levi.armstrong@swri.org>
+Build-Depends: debhelper (>= 9.0.0), cmake, libboost-all-dev, libconsole-bridge-dev, libeigen3-dev, libgtest-dev <!nocheck>, liborocos-kdl-dev, ros-noetic-ros-industrial-cmake-boilerplate, ros-noetic-tesseract-common, ros-noetic-tesseract-geometry, ros-noetic-tesseract-support <!nocheck>
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-noetic-tesseract-scene-graph
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libboost-all-dev, libconsole-bridge-dev, libeigen3-dev, liborocos-kdl-dev, ros-noetic-tesseract-common, ros-noetic-tesseract-geometry
+Description: The tesseract_scene_graph package
