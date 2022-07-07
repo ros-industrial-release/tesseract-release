@@ -68,6 +68,7 @@ target_clang_tidy(${PROJECT_NAME} ENABLE ${TESSERACT_ENABLE_CLANG_TIDY})
 target_cxx_version(${PROJECT_NAME} PUBLIC VERSION ${TESSERACT_CXX_VERSION})
 target_code_coverage(
   ${PROJECT_NAME}
+  PRIVATE
   ALL
   EXCLUDE ${COVERAGE_EXCLUDE}
   ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
@@ -103,11 +104,17 @@ if(TESSERACT_PACKAGE)
     LICENSE_FILE ${CMAKE_CURRENT_LIST_DIR}/../LICENSE
     README_FILE ${CMAKE_CURRENT_LIST_DIR}/../README.md
     LINUX_DEPENDS
-      "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
-      "${TESSERACT_PACKAGE_PREFIX}tesseract-geometry"
-      "libconsole-bridge-dev"
       "libboost-all-dev"
       "liborocos-kdl-dev"
       "libeigen3-dev"
-    WINDOWS_DEPENDS "Eigen3" "console_bridge")
+      "libconsole-bridge-dev"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-geometry"
+    WINDOWS_DEPENDS
+      "boost-all"
+      "orocos-kdl"
+      "Eigen3"
+      "console-bridge"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-common"
+      "${TESSERACT_PACKAGE_PREFIX}tesseract-geometry")
 endif()
