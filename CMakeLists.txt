@@ -57,7 +57,7 @@ add_library(
 target_link_libraries(
   ${PROJECT_NAME}
   PUBLIC Eigen3::Eigen
-         ${TinyXML2_LIBRARIES}
+         tinyxml2::tinyxml2
          ${CMAKE_DL_LIBS}
          Boost::boost
          Boost::system
@@ -77,7 +77,6 @@ target_code_coverage(
   ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
 target_include_directories(${PROJECT_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
                                                   "$<INSTALL_INTERFACE:include>")
-target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC ${TinyXML2_INCLUDE_DIRS})
 
 configure_package(NAMESPACE tesseract TARGETS ${PROJECT_NAME})
 
@@ -90,9 +89,12 @@ install(
   PATTERN "*.hpp"
   PATTERN ".svn" EXCLUDE)
 
-install(FILES "${CMAKE_CURRENT_LIST_DIR}/cmake/tesseract_macros.cmake"
-              "${CMAKE_CURRENT_LIST_DIR}/cmake/FindTinyXML2.cmake" "${CMAKE_CURRENT_LIST_DIR}/cmake/Findtcmalloc.cmake"
-        DESTINATION lib/cmake/${PROJECT_NAME})
+install(
+  FILES "${CMAKE_CURRENT_LIST_DIR}/cmake/tesseract_macros.cmake"
+        "${CMAKE_CURRENT_LIST_DIR}/cmake/FindTinyXML2.cmake"
+        "${CMAKE_CURRENT_LIST_DIR}/cmake/Findtcmalloc.cmake"
+        "${CMAKE_CURRENT_LIST_DIR}/cmake/Findtcmalloc_minimal.cmake"
+  DESTINATION lib/cmake/${PROJECT_NAME})
 
 if(TESSERACT_ENABLE_TESTING)
   enable_testing()
@@ -108,16 +110,19 @@ if(TESSERACT_PACKAGE)
     LICENSE_FILE ${CMAKE_CURRENT_LIST_DIR}/../LICENSE
     README_FILE ${CMAKE_CURRENT_LIST_DIR}/../README.md
     LINUX_DEPENDS
-      "libboost-system1.71.0"
-      "libboost-filesystem1.71.0"
-      "libboost-serialization1.71.0"
+      "libboost-system-dev"
+      "libboost-filesystem-dev"
+      "libboost-serialization-dev"
       "libconsole-bridge-dev"
       "libtinyxml2-dev"
       "libeigen3-dev"
+      "libyaml-cpp-dev"
     WINDOWS_DEPENDS
       "boost_system"
       "boost_filesystem;"
       "boost_serialization"
+      "console-bridge"
       "tinyxml2"
-      "Eigen3")
+      "Eigen3"
+      "yaml-cpp")
 endif()

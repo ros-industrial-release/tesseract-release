@@ -9,7 +9,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/utils.h>
 #include <tesseract_common/sfinae_utils.h>
 #include <tesseract_common/resource_locator.h>
-#include <tesseract_common/eigen_serialization.h>
 #include <tesseract_common/manipulator_info.h>
 #include <tesseract_common/joint_state.h>
 #include <tesseract_common/types.h>
@@ -297,30 +296,6 @@ TEST(TesseractCommonUnit, ManipulatorInfo)  // NOLINT
   }
 }
 
-TEST(TesseractCommonUnit, serializationManipulatorInfo)  // NOLINT
-{
-  tesseract_common::ManipulatorInfo manip_info("manipulator", "world", "tool0");
-
-  {
-    std::ofstream os("/tmp/manipulator_info_boost.xml");
-    boost::archive::xml_oarchive oa(os);
-    oa << BOOST_SERIALIZATION_NVP(manip_info);
-  }
-
-  tesseract_common::ManipulatorInfo nmanip_info;
-  {
-    std::ifstream ifs("/tmp/manipulator_info_boost.xml");
-    assert(ifs.good());
-    boost::archive::xml_iarchive ia(ifs);
-
-    // restore the schedule from the archive
-    ia >> BOOST_SERIALIZATION_NVP(nmanip_info);
-  }
-
-  EXPECT_TRUE(manip_info == nmanip_info);
-  EXPECT_FALSE(manip_info != nmanip_info);
-}
-
 TEST(TesseractCommonUnit, JointStateTest)  // NOLINT
 {
   std::vector<std::string> joint_names{ "joint_1", "joint_2", "joint_3" };
@@ -330,289 +305,7 @@ TEST(TesseractCommonUnit, JointStateTest)  // NOLINT
   EXPECT_TRUE(joint_state.position.isApprox(positons, 1e-5));
 }
 
-TEST(TesseractCommonUnit, serializationJointState)  // NOLINT
-{
-  tesseract_common::JointState joint_state;
-  joint_state.joint_names = { "joint_1", "joint_2", "joint_3" };
-  joint_state.position = Eigen::VectorXd::Constant(3, 5);
-  joint_state.velocity = Eigen::VectorXd::Constant(3, 6);
-  joint_state.acceleration = Eigen::VectorXd::Constant(3, 7);
-  joint_state.effort = Eigen::VectorXd::Constant(3, 8);
-  joint_state.time = 100;
-
-  {
-    std::ofstream os("/tmp/joint_state_boost.xml");
-    boost::archive::xml_oarchive oa(os);
-    oa << BOOST_SERIALIZATION_NVP(joint_state);
-  }
-
-  tesseract_common::JointState njoint_state;
-  {
-    std::ifstream ifs("/tmp/joint_state_boost.xml");
-    assert(ifs.good());
-    boost::archive::xml_iarchive ia(ifs);
-
-    // restore the schedule from the archive
-    ia >> BOOST_SERIALIZATION_NVP(njoint_state);
-  }
-
-  EXPECT_TRUE(joint_state == njoint_state);
-  EXPECT_FALSE(joint_state != njoint_state);
-}
-
-TEST(TesseractCommonUnit, serializationKinematicLimits)  // NOLINT
-{
-  tesseract_common::KinematicLimits limits;
-  limits.resize(3);
-  EXPECT_EQ(limits.joint_limits.rows(), 3);
-  EXPECT_EQ(limits.velocity_limits.rows(), 3);
-  EXPECT_EQ(limits.acceleration_limits.rows(), 3);
-
-  limits.joint_limits << -5, 5, -5, 5, -5, 5;
-  limits.velocity_limits = Eigen::VectorXd::Constant(3, 6);
-  limits.acceleration_limits = Eigen::VectorXd::Constant(3, 7);
-
-  {
-    std::ofstream os("/tmp/kinematic_limits_boost.xml");
-    boost::archive::xml_oarchive oa(os);
-    oa << BOOST_SERIALIZATION_NVP(limits);
-  }
-
-  tesseract_common::KinematicLimits nlimits;
-  {
-    std::ifstream ifs("/tmp/kinematic_limits_boost.xml");
-    assert(ifs.good());
-    boost::archive::xml_iarchive ia(ifs);
-
-    // restore the schedule from the archive
-    ia >> BOOST_SERIALIZATION_NVP(nlimits);
-  }
-
-  EXPECT_TRUE(limits == nlimits);
-  EXPECT_FALSE(limits != nlimits);
-}
-
-TEST(TesseractCommonUnit, serializationVectorXd)  // NOLINT
-{
-  {  // Serialize empty object
-    Eigen::VectorXd ev;
-
-    {
-      std::ofstream os("/tmp/eigen_vector_xd_boost.xml");
-      boost::archive::xml_oarchive oa(os);
-      oa << BOOST_SERIALIZATION_NVP(ev);
-    }
-
-    Eigen::VectorXd nev;
-    {
-      std::ifstream ifs("/tmp/eigen_vector_xd_boost.xml");
-      assert(ifs.good());
-      boost::archive::xml_iarchive ia(ifs);
-
-      // restore the schedule from the archive
-      ia >> BOOST_SERIALIZATION_NVP(nev);
-    }
-  }
-
-  // Serialize to object which already has data
-  for (int i = 0; i < 5; ++i)
-  {
-    Eigen::VectorXd ev = Eigen::VectorXd::Random(6);
-
-    {
-      std::ofstream os("/tmp/eigen_vector_xd_boost.xml");
-      boost::archive::xml_oarchive oa(os);
-      oa << BOOST_SERIALIZATION_NVP(ev);
-    }
-
-    Eigen::VectorXd nev = Eigen::VectorXd::Random(6);
-    {
-      std::ifstream ifs("/tmp/eigen_vector_xd_boost.xml");
-      assert(ifs.good());
-      boost::archive::xml_iarchive ia(ifs);
-
-      // restore the schedule from the archive
-      ia >> BOOST_SERIALIZATION_NVP(nev);
-    }
-
-    EXPECT_TRUE(ev.isApprox(nev, 1e-5));
-  }
-
-  // Serialize to object which already has data and different size
-  for (int i = 0; i < 5; ++i)
-  {
-    Eigen::VectorXd ev = Eigen::VectorXd::Random(6);
-
-    {
-      std::ofstream os("/tmp/eigen_vector_xd_boost.xml");
-      boost::archive::xml_oarchive oa(os);
-      oa << BOOST_SERIALIZATION_NVP(ev);
-    }
-
-    Eigen::VectorXd nev = Eigen::VectorXd::Random(3);
-    {
-      std::ifstream ifs("/tmp/eigen_vector_xd_boost.xml");
-      assert(ifs.good());
-      boost::archive::xml_iarchive ia(ifs);
-
-      // restore the schedule from the archive
-      ia >> BOOST_SERIALIZATION_NVP(nev);
-    }
-
-    EXPECT_TRUE(ev.isApprox(nev, 1e-5));
-  }
-
-  // Default use case
-  for (int i = 0; i < 5; ++i)
-  {
-    Eigen::VectorXd ev = Eigen::VectorXd::Random(6);
-
-    {
-      std::ofstream os("/tmp/eigen_vector_xd_boost.xml");
-      boost::archive::xml_oarchive oa(os);
-      oa << BOOST_SERIALIZATION_NVP(ev);
-    }
-
-    Eigen::VectorXd nev;
-    {
-      std::ifstream ifs("/tmp/eigen_vector_xd_boost.xml");
-      assert(ifs.good());
-      boost::archive::xml_iarchive ia(ifs);
-
-      // restore the schedule from the archive
-      ia >> BOOST_SERIALIZATION_NVP(nev);
-    }
-
-    EXPECT_TRUE(ev.isApprox(nev, 1e-5));
-  }
-}
-
-TEST(TesseractCommonUnit, serializationMatrixX2d)  // NOLINT
-{
-  {  // Serialize empty
-    Eigen::MatrixX2d em;
-
-    {
-      std::ofstream os("/tmp/eigen_matrix_x2d_boost.xml");
-      boost::archive::xml_oarchive oa(os);
-      oa << BOOST_SERIALIZATION_NVP(em);
-    }
-
-    Eigen::MatrixX2d nem;
-    {
-      std::ifstream ifs("/tmp/eigen_matrix_x2d_boost.xml");
-      assert(ifs.good());
-      boost::archive::xml_iarchive ia(ifs);
-
-      // restore the schedule from the archive
-      ia >> BOOST_SERIALIZATION_NVP(nem);
-    }
-
-    EXPECT_TRUE(em.isApprox(nem, 1e-5));
-  }
-
-  // Serialize to object which already has data
-  for (int i = 0; i < 5; ++i)
-  {
-    Eigen::MatrixX2d em = Eigen::MatrixX2d::Random(4, 2);
-
-    {
-      std::ofstream os("/tmp/eigen_matrix_x2d_boost.xml");
-      boost::archive::xml_oarchive oa(os);
-      oa << BOOST_SERIALIZATION_NVP(em);
-    }
-
-    Eigen::MatrixX2d nem = Eigen::MatrixX2d::Random(4, 2);
-    {
-      std::ifstream ifs("/tmp/eigen_matrix_x2d_boost.xml");
-      assert(ifs.good());
-      boost::archive::xml_iarchive ia(ifs);
-
-      // restore the schedule from the archive
-      ia >> BOOST_SERIALIZATION_NVP(nem);
-    }
-
-    EXPECT_TRUE(em.isApprox(nem, 1e-5));
-  }
-
-  // Serialize to object which already has data and different size
-  for (int i = 0; i < 5; ++i)
-  {
-    Eigen::MatrixX2d em = Eigen::MatrixX2d::Random(4, 2);
-
-    {
-      std::ofstream os("/tmp/eigen_matrix_x2d_boost.xml");
-      boost::archive::xml_oarchive oa(os);
-      oa << BOOST_SERIALIZATION_NVP(em);
-    }
-
-    Eigen::MatrixX2d nem = Eigen::MatrixX2d::Random(2, 2);
-    {
-      std::ifstream ifs("/tmp/eigen_matrix_x2d_boost.xml");
-      assert(ifs.good());
-      boost::archive::xml_iarchive ia(ifs);
-
-      // restore the schedule from the archive
-      ia >> BOOST_SERIALIZATION_NVP(nem);
-    }
-
-    EXPECT_TRUE(em.isApprox(nem, 1e-5));
-  }
-
-  // Default
-  for (int i = 0; i < 5; ++i)
-  {
-    Eigen::MatrixX2d em = Eigen::MatrixX2d::Random(4, 2);
-
-    {
-      std::ofstream os("/tmp/eigen_matrix_x2d_boost.xml");
-      boost::archive::xml_oarchive oa(os);
-      oa << BOOST_SERIALIZATION_NVP(em);
-    }
-
-    Eigen::MatrixX2d nem;
-    {
-      std::ifstream ifs("/tmp/eigen_matrix_x2d_boost.xml");
-      assert(ifs.good());
-      boost::archive::xml_iarchive ia(ifs);
-
-      // restore the schedule from the archive
-      ia >> BOOST_SERIALIZATION_NVP(nem);
-    }
-
-    EXPECT_TRUE(em.isApprox(nem, 1e-5));
-  }
-}
-
-TEST(TesseractCommonUnit, serializationIsometry3d)  // NOLINT
-{
-  for (int i = 0; i < 5; ++i)
-  {
-    Eigen::Isometry3d pose =
-        Eigen::Isometry3d::Identity() * Eigen::AngleAxisd(M_PI, Eigen::Vector3d::Random().normalized());
-    pose.translation() = Eigen::Vector3d::Random();
-
-    {
-      std::ofstream os("/tmp/eigen_isometry3d_boost.xml");
-      boost::archive::xml_oarchive oa(os);
-      oa << BOOST_SERIALIZATION_NVP(pose);
-    }
-
-    Eigen::Isometry3d npose;
-    {
-      std::ifstream ifs("/tmp/eigen_isometry3d_boost.xml");
-      assert(ifs.good());
-      boost::archive::xml_iarchive ia(ifs);
-
-      // restore the schedule from the archive
-      ia >> BOOST_SERIALIZATION_NVP(npose);
-    }
-
-    EXPECT_TRUE(pose.isApprox(npose, 1e-5));
-  }
-}
-
-TESSERACT_ANY_EXPORT(tesseract_common::JointState);  // NOLINT
+TESSERACT_ANY_EXPORT(tesseract_common, JointState);  // NOLINT
 
 TEST(TesseractCommonUnit, anyUnit)  // NOLINT
 {
@@ -648,14 +341,14 @@ TEST(TesseractCommonUnit, anyUnit)  // NOLINT
   EXPECT_TRUE(&any_type_const_ref1 == &any_type_const_ref2);
 
   {
-    std::ofstream os("/tmp/any_type_boost.xml");
+    std::ofstream os(tesseract_common::getTempPath() + "any_type_boost.xml");
     boost::archive::xml_oarchive oa(os);
     oa << BOOST_SERIALIZATION_NVP(any_type);
   }
 
   tesseract_common::Any nany_type;
   {
-    std::ifstream ifs("/tmp/any_type_boost.xml");
+    std::ifstream ifs(tesseract_common::getTempPath() + "any_type_boost.xml");
     assert(ifs.good());
     boost::archive::xml_iarchive ia(ifs);
 
@@ -778,7 +471,7 @@ TEST(TesseractCommonUnit, isIdenticalArrayUnit)  // NOLINT
   }
   {
     // Clang-tidy catches unitialized arrays anyway, but check it just in case the caller isn't running clang-tidy
-    std::array<int, 4> v1 = { 1, 2, 3, 4 };
+    std::array<int, 4> v1 = { 1, 2, 3, 6 };
     std::array<int, 4> v2;  // NOLINT
     bool equal = tesseract_common::isIdenticalArray<int, 4>(v1, v2);
     EXPECT_FALSE(equal);
