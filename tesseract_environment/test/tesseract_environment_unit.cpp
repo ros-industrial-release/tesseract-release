@@ -15,43 +15,17 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_environment/commands.h>
 #include <tesseract_environment/environment.h>
 #include <tesseract_environment/utils.h>
+#include <tesseract_support/tesseract_support_resource_locator.h>
 
 using namespace tesseract_scene_graph;
 using namespace tesseract_srdf;
 using namespace tesseract_collision;
 using namespace tesseract_environment;
 
-std::string locateResource(const std::string& url)
-{
-  std::string mod_url = url;
-  if (url.find("package://tesseract_support") == 0)
-  {
-    mod_url.erase(0, strlen("package://tesseract_support"));
-    size_t pos = mod_url.find('/');
-    if (pos == std::string::npos)
-    {
-      return std::string();
-    }
-
-    std::string package = mod_url.substr(0, pos);
-    mod_url.erase(0, pos);
-    std::string package_path = std::string(TESSERACT_SUPPORT_DIR);
-
-    if (package_path.empty())
-    {
-      return std::string();
-    }
-
-    mod_url = package_path + mod_url;
-  }
-
-  return mod_url;
-}
-
 Eigen::Isometry3d tcpCallback(const tesseract_common::ManipulatorInfo& mi)
 {
   const std::string& tcp_offset_name = std::get<0>(mi.tcp_offset);
-  if (tcp_offset_name == "laser")
+  if (tcp_offset_name == "laser_callback")
     return Eigen::Isometry3d::Identity() * Eigen::Translation3d(0, 0, 0.1);
 
   throw std::runtime_error("TCPCallback failed to find tcp!");
@@ -61,14 +35,14 @@ SceneGraph::UPtr getSceneGraph()
 {
   std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf";
 
-  tesseract_common::SimpleResourceLocator locator(locateResource);
+  tesseract_common::TesseractSupportResourceLocator locator;
   return tesseract_urdf::parseURDFFile(path, locator);
 }
 
 SRDFModel::Ptr getSRDFModel(const SceneGraph& scene_graph)
 {
   std::string path = std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.srdf";
-  tesseract_common::SimpleResourceLocator locator(locateResource);
+  tesseract_common::TesseractSupportResourceLocator locator;
 
   auto srdf = std::make_shared<SRDFModel>();
   srdf->initFile(scene_graph, path, locator);
@@ -198,7 +172,7 @@ Environment::Ptr getEnvironment(EnvironmentInitType init_type = EnvironmentInitT
 
       success = env->init(*scene_graph, srdf);
       EXPECT_TRUE(env->getResourceLocator() == nullptr);
-      env->setResourceLocator(std::make_shared<tesseract_common::SimpleResourceLocator>(locateResource));
+      env->setResourceLocator(std::make_shared<tesseract_common::TesseractSupportResourceLocator>());
       EXPECT_TRUE(env->getResourceLocator() != nullptr);
       break;
     }
@@ -206,8 +180,8 @@ Environment::Ptr getEnvironment(EnvironmentInitType init_type = EnvironmentInitT
     {
       std::string urdf_string = getSceneGraphString();
       std::string srdf_string = getSRDFModelString();
-      success = env->init(
-          urdf_string, srdf_string, std::make_shared<tesseract_common::SimpleResourceLocator>(locateResource));
+      success =
+          env->init(urdf_string, srdf_string, std::make_shared<tesseract_common::TesseractSupportResourceLocator>());
       EXPECT_TRUE(env->getResourceLocator() != nullptr);
       break;
     }
@@ -216,8 +190,7 @@ Environment::Ptr getEnvironment(EnvironmentInitType init_type = EnvironmentInitT
       tesseract_common::fs::path urdf_path(std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf");
       tesseract_common::fs::path srdf_path(std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.srdf");
 
-      success =
-          env->init(urdf_path, srdf_path, std::make_shared<tesseract_common::SimpleResourceLocator>(locateResource));
+      success = env->init(urdf_path, srdf_path, std::make_shared<tesseract_common::TesseractSupportResourceLocator>());
       EXPECT_TRUE(env->getResourceLocator() != nullptr);
       break;
     }
@@ -315,6 +288,17 @@ Environment::Ptr getEnvironment(EnvironmentInitType init_type = EnvironmentInitT
     EXPECT_EQ(env->getContinuousContactManager()->getCollisionObjects().size(), 8);
   }
   {
+    env->clearCachedDiscreteContactManager();
+    env->clearCachedContinuousContactManager();
+    tesseract_common::ContactManagersPluginInfo cm_info = env->getContactManagersPluginInfo();
+    EXPECT_EQ(cm_info.discrete_plugin_infos.default_plugin, "BulletDiscreteSimpleManager");
+    EXPECT_EQ(cm_info.continuous_plugin_infos.default_plugin, "BulletCastSimpleManager");
+    EXPECT_EQ(env->getDiscreteContactManager()->getName(), "BulletDiscreteSimpleManager");
+    EXPECT_EQ(env->getContinuousContactManager()->getName(), "BulletCastSimpleManager");
+    EXPECT_EQ(env->getDiscreteContactManager()->getCollisionObjects().size(), 8);
+    EXPECT_EQ(env->getContinuousContactManager()->getCollisionObjects().size(), 8);
+  }
+  {
     env->setActiveDiscreteContactManager("BulletDiscreteBVHManager");
     env->setActiveContinuousContactManager("BulletCastBVHManager");
     tesseract_common::ContactManagersPluginInfo cm_info = env->getContactManagersPluginInfo();
@@ -366,21 +350,21 @@ Environment::Ptr getEnvironmentURDFOnly(EnvironmentInitType init_type)
 
       success = env->init(*scene_graph);
       EXPECT_TRUE(env->getResourceLocator() == nullptr);
-      env->setResourceLocator(std::make_shared<tesseract_common::SimpleResourceLocator>(locateResource));
+      env->setResourceLocator(std::make_shared<tesseract_common::TesseractSupportResourceLocator>());
       EXPECT_TRUE(env->getResourceLocator() != nullptr);
       break;
     }
     case EnvironmentInitType::STRING:
     {
       std::string urdf_string = getSceneGraphString();
-      success = env->init(urdf_string, std::make_shared<tesseract_common::SimpleResourceLocator>(locateResource));
+      success = env->init(urdf_string, std::make_shared<tesseract_common::TesseractSupportResourceLocator>());
       EXPECT_TRUE(env->getResourceLocator() != nullptr);
       break;
     }
     case EnvironmentInitType::FILEPATH:
     {
       tesseract_common::fs::path urdf_path(std::string(TESSERACT_SUPPORT_DIR) + "/urdf/lbr_iiwa_14_r820.urdf");
-      success = env->init(urdf_path, std::make_shared<tesseract_common::SimpleResourceLocator>(locateResource));
+      success = env->init(urdf_path, std::make_shared<tesseract_common::TesseractSupportResourceLocator>());
       EXPECT_TRUE(env->getResourceLocator() != nullptr);
       break;
     }
@@ -413,7 +397,7 @@ TEST(TesseractEnvironmentUnit, EnvInitURDFOnlyUnit)  // NOLINT
 
 TEST(TesseractEnvironmentUnit, EnvInitFailuresUnit)  // NOLINT
 {
-  auto rl = std::make_shared<tesseract_common::SimpleResourceLocator>(locateResource);
+  auto rl = std::make_shared<tesseract_common::TesseractSupportResourceLocator>();
   {
     auto env = std::make_shared<Environment>();
     EXPECT_TRUE(env != nullptr);
@@ -1466,6 +1450,7 @@ TEST(TesseractEnvironmentUnit, EnvCurrentStatePreservedWhenEnvChanges)  // NOLIN
 {
   // Get the environment
   auto env = getEnvironment();
+  auto timestamp1 = env->getTimestamp();
 
   // Check if visibility and collision enabled
   for (const auto& link_name : env->getLinkNames())
@@ -1475,7 +1460,7 @@ TEST(TesseractEnvironmentUnit, EnvCurrentStatePreservedWhenEnvChanges)  // NOLIN
   }
 
   // Get current timestamp
-  auto d1 = env->getCurrentStateTimestamp();
+  auto current_state_timestamp1 = env->getCurrentStateTimestamp();
 
   // Set the initial state of the robot
   std::unordered_map<std::string, double> joint_states;
@@ -1489,9 +1474,11 @@ TEST(TesseractEnvironmentUnit, EnvCurrentStatePreservedWhenEnvChanges)  // NOLIN
   env->setState(joint_states);
 
   // Get new timestamp
-  auto d2 = env->getCurrentStateTimestamp();
+  auto current_state_timestamp2 = env->getCurrentStateTimestamp();
+  auto timestamp2 = env->getTimestamp();
 
-  EXPECT_TRUE(d2.count() > d1.count());
+  EXPECT_TRUE(current_state_timestamp2 > current_state_timestamp1);
+  EXPECT_TRUE(timestamp2 > timestamp1);
 
   SceneState state = env->getState();
   for (auto& joint_state : joint_states)
@@ -1507,6 +1494,13 @@ TEST(TesseractEnvironmentUnit, EnvCurrentStatePreservedWhenEnvChanges)  // NOLIN
   joint.type = JointType::FIXED;
 
   env->applyCommand(std::make_shared<AddLinkCommand>(link, joint));
+
+  // Get new timestamp
+  auto current_state_timestamp3 = env->getCurrentStateTimestamp();
+  auto timestamp3 = env->getTimestamp();
+
+  EXPECT_TRUE(current_state_timestamp3 > current_state_timestamp2);
+  EXPECT_TRUE(timestamp3 > timestamp2);
 
   state = env->getState();
   for (auto& joint_state : joint_states)
@@ -2035,9 +2029,15 @@ TEST(TesseractEnvironmentUnit, EnvClone)  // NOLINT
 
   auto cmd = std::make_shared<ChangeCollisionMarginsCommand>(collision_margin_data, overrid_type);
   env->applyCommand(cmd);
+  auto timestamp = env->getTimestamp();
+  auto current_state_timestamp = env->getCurrentStateTimestamp();
 
   // Clone the environment
   auto clone = env->clone();
+
+  // Timestamp should be identical after clone
+  EXPECT_TRUE(timestamp == clone->getTimestamp());
+  EXPECT_TRUE(current_state_timestamp == clone->getCurrentStateTimestamp());
 
   // Check the basics
   EXPECT_EQ(clone->getName(), env->getName());
@@ -2375,7 +2375,7 @@ TEST(TesseractEnvironmentUnit, EnvFindTCPUnit)  // NOLINT
     Eigen::Isometry3d tcp = Eigen::Isometry3d::Identity();
     tcp.translation() = Eigen::Vector3d(0, 0, 0.25);
     tesseract_common::ManipulatorInfo manip_info("manipulator", "", "");
-    manip_info.tcp_offset = "laser";
+    manip_info.tcp_offset = "laser_callback";
     Eigen::Isometry3d found_tcp = env->findTCPOffset(manip_info);
     EXPECT_TRUE(found_tcp.isApprox(Eigen::Isometry3d::Identity() * Eigen::Translation3d(0, 0, 0.1), 1e-6));
   }
