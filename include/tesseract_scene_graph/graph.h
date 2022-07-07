@@ -130,7 +130,8 @@ struct ShortestPath
 
 class SceneGraph
 #ifndef SWIG
-  : public Graph
+  : public Graph,
+    public boost::noncopyable
 #endif  // SWIG
 {
 public:
@@ -148,8 +149,8 @@ public:
   SceneGraph(const SceneGraph& other) = delete;
   SceneGraph& operator=(const SceneGraph& other) = delete;
 
-  SceneGraph(SceneGraph&& other) = default;
-  SceneGraph& operator=(SceneGraph&& other) = default;
+  SceneGraph(SceneGraph&& other) noexcept;
+  SceneGraph& operator=(SceneGraph&& other) noexcept;
 
   /**
    * @brief Clone the scene graph
@@ -582,6 +583,9 @@ private:
   std::unordered_map<std::string, std::pair<Link::Ptr, Vertex>> link_map_;
   std::unordered_map<std::string, std::pair<Joint::Ptr, Edge>> joint_map_;
   tesseract_common::AllowedCollisionMatrix::Ptr acm_;
+
+  /** @brief The rebuild the link and joint map by extraction information from the graph */
+  void rebuildLinkAndJointMaps();
 
   struct cycle_detector : public boost::dfs_visitor<>
   {
