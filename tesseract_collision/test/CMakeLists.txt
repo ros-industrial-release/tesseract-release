@@ -6,38 +6,9 @@ else(OPENMP_FOUND)
   message(STATUS "Not found OpenMP")
 endif()
 
-find_package(GTest REQUIRED)
 find_package(tesseract_scene_graph REQUIRED)
 
-if(NOT TARGET GTest::GTest)
-  add_library(GTest::GTest INTERFACE IMPORTED)
-  set_target_properties(GTest::GTest PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${GTEST_INCLUDE_DIRS}")
-  if(${GTEST_LIBRARIES})
-    set_target_properties(GTest::GTest PROPERTIES INTERFACE_LINK_LIBRARIES "${GTEST_LIBRARIES}")
-  else()
-    if(MSVC)
-      set_target_properties(GTest::GTest PROPERTIES INTERFACE_LINK_LIBRARIES "gtest.lib")
-    else()
-      set_target_properties(GTest::GTest PROPERTIES INTERFACE_LINK_LIBRARIES "libgtest.so")
-    endif()
-  endif()
-endif()
-
-if(NOT TARGET GTest::Main)
-  add_library(GTest::Main INTERFACE IMPORTED)
-  set_target_properties(GTest::Main PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${GTEST_INCLUDE_DIRS}")
-  if(${GTEST_MAIN_LIBRARIES})
-    set_target_properties(GTest::Main PROPERTIES INTERFACE_LINK_LIBRARIES "${GTEST_MAIN_LIBRARIES}")
-  else()
-    if(MSVC)
-      set_target_properties(GTest::Main PROPERTIES INTERFACE_LINK_LIBRARIES "gtest_main.lib")
-    else()
-      set_target_properties(GTest::Main PROPERTIES INTERFACE_LINK_LIBRARIES "libgtest_main.so")
-    endif()
-  endif()
-endif()
-
-include(GoogleTest)
+find_gtest()
 
 macro(add_gtest test_name test_file)
   add_executable(${test_name} ${test_file})
@@ -62,6 +33,7 @@ macro(add_gtest test_name test_file)
   target_cxx_version(${test_name} PRIVATE VERSION ${TESSERACT_CXX_VERSION})
   target_code_coverage(
     ${test_name}
+    PRIVATE
     ALL
     EXCLUDE ${COVERAGE_EXCLUDE}
     ENABLE ${TESSERACT_ENABLE_CODE_COVERAGE})
@@ -94,3 +66,6 @@ add_gtest(${PROJECT_NAME}_octomap_octomap_unit collision_octomap_octomap_unit.cp
 add_gtest(${PROJECT_NAME}_collision_margin_data_unit collision_margin_data_unit.cpp)
 add_gtest(${PROJECT_NAME}_factory_unit contact_managers_factory_unit.cpp)
 add_gtest(${PROJECT_NAME}_core_unit collision_core_unit.cpp)
+
+add_gtest(${PROJECT_NAME}_factory_static_unit contact_managers_factory_static_unit.cpp)
+target_link_libraries(${PROJECT_NAME}_factory_static_unit PRIVATE ${PROJECT_NAME}_bullet_factories)
