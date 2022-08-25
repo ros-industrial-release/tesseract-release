@@ -476,14 +476,14 @@ std::vector<std::shared_ptr<T>> createMeshFromResource(tesseract_common::Resourc
   // And have it read the given file with some post-processing
   const aiScene* scene = nullptr;
   if (triangulate)
-    scene = importer.ReadFileFromMemory(&data[0],
+    scene = importer.ReadFileFromMemory(data.data(),
                                         data.size(),
                                         aiProcess_Triangulate | aiProcess_JoinIdenticalVertices |
                                             aiProcess_SortByPType | aiProcess_RemoveComponent,
                                         hint);
   else
     scene =
-        importer.ReadFileFromMemory(&data[0],
+        importer.ReadFileFromMemory(data.data(),
                                     data.size(),
                                     aiProcess_JoinIdenticalVertices | aiProcess_SortByPType | aiProcess_RemoveComponent,
                                     hint);
@@ -549,18 +549,5 @@ static std::vector<std::shared_ptr<T>> createMeshFromBytes(const std::string& ur
 }
 
 }  // namespace tesseract_geometry
-
-#ifdef SWIG
-%pybuffer_binary(const uint8_t* bytes, size_t bytes_len);
-%template(createMeshFromResource) tesseract_geometry::createMeshFromResource<tesseract_geometry::Mesh>;
-%template(createSDFMeshFromResource) tesseract_geometry::createMeshFromResource<tesseract_geometry::SDFMesh>;
-%template(createConvexMeshFromResource) tesseract_geometry::createMeshFromResource<tesseract_geometry::ConvexMesh>;
-%template(createMeshFromPath) tesseract_geometry::createMeshFromPath<tesseract_geometry::Mesh>;
-%template(createSDFMeshFromPath) tesseract_geometry::createMeshFromPath<tesseract_geometry::SDFMesh>;
-%template(createConvexMeshFromPath) tesseract_geometry::createMeshFromPath<tesseract_geometry::ConvexMesh>;
-%template(createMeshFromBytes) tesseract_geometry::createMeshFromBytes<tesseract_geometry::Mesh>;
-%template(createSDFMeshFromBytes) tesseract_geometry::createMeshFromBytes<tesseract_geometry::SDFMesh>;
-%template(createConvexMeshFromBytes) tesseract_geometry::createMeshFromBytes<tesseract_geometry::ConvexMesh>;
-#endif
 
 #endif

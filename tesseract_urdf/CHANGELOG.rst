@@ -2,6 +2,15 @@
 Changelog for package tesseract_urdf
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.13.1 (2022-08-25)
+-------------------
+
+0.13.0 (2022-07-11)
+-------------------
+* Update code based on clang-tidy-14
+* Fixed convex mesh export (`#799 <https://github.com/tesseract-robotics/tesseract/issues/799>`_)
+* Contributors: Levi Armstrong, Michael Ripperger
+
 0.10.0 (2022-07-06)
 -------------------
 * Update ros_industrial_cmake_boilerplate to 0.3.0 (`#795 <https://github.com/tesseract-robotics/tesseract/issues/795>`_)
