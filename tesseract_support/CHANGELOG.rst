@@ -2,6 +2,14 @@
 Changelog for package tesseract_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.13.1 (2022-08-25)
+-------------------
+* Fix the Windows 2019 github action (`#805 <https://github.com/tesseract-robotics/tesseract/issues/805>`_)
+* Contributors: John Wason
+
+0.13.0 (2022-07-11)
+-------------------
+
 0.10.0 (2022-07-06)
 -------------------
 * Update ros_industrial_cmake_boilerplate to 0.3.0 (`#795 <https://github.com/tesseract-robotics/tesseract/issues/795>`_)

@@ -64,10 +64,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
   TESSERACT_ANY_EXPORT_KEY(N, C)                                                                                       \
   TESSERACT_ANY_EXPORT_IMPLEMENT(N::C)
 
-namespace tesseract_common
-{
-#ifndef SWIG
-namespace detail_any
+namespace tesseract_common::detail_any
 {
 template <typename A>
 struct AnyConcept  // NOLINT
@@ -108,9 +105,7 @@ private:
     ar& boost::serialization::make_nvp("base", boost::serialization::base_object<BaseType>(*this));
   }
 };
-}  // namespace detail_any
-#endif  // SWIG
-}  // namespace tesseract_common
+}  // namespace tesseract_common::detail_any
 
 namespace tesseract_common
 {
@@ -130,14 +125,10 @@ private:
 
 }  // namespace tesseract_common
 
-#ifdef SWIG
-%template(Instructions) std::vector<tesseract_common::Any>;
-#else
 BOOST_CLASS_EXPORT_KEY(tesseract_common::AnyBase)
 BOOST_CLASS_TRACKING(tesseract_common::AnyBase, boost::serialization::track_never)
 
 BOOST_CLASS_EXPORT_KEY(tesseract_common::Any)
 BOOST_CLASS_TRACKING(tesseract_common::Any, boost::serialization::track_never);
-#endif  // SWIG
 
 #endif  // TESSERACT_COMMON_ANY_H
