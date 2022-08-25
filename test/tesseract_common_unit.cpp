@@ -246,7 +246,7 @@ TEST(TesseractCommonUnit, bytesResource)  // NOLINT
   }
 
   std::shared_ptr<tesseract_common::BytesResource> bytes_resource2 =
-      std::make_shared<tesseract_common::BytesResource>("package://test_package/data.bin", &data[0], data.size());
+      std::make_shared<tesseract_common::BytesResource>("package://test_package/data.bin", data.data(), data.size());
   EXPECT_EQ(bytes_resource2->getUrl(), "package://test_package/data.bin");
   EXPECT_EQ(bytes_resource->getResourceContents().size(), data.size());
 }
@@ -367,33 +367,49 @@ TEST(TesseractCommonUnit, boundsUnit)  // NOLINT
 {
   Eigen::VectorXd v = Eigen::VectorXd::Ones(6);
   v = v.array() + std::numeric_limits<float>::epsilon();
-  Eigen::MatrixX2d limits(6, 2);
+  Eigen::MatrixX2d limits(6, 2);  // NOLINT(clang-analyzer-core.uninitialized.UndefReturn)
   limits.col(0) = -Eigen::VectorXd::Ones(6);
   limits.col(1) = Eigen::VectorXd::Ones(6);
 
-  EXPECT_TRUE(tesseract_common::satisfiesPositionLimits(v, limits, std::numeric_limits<float>::epsilon()));
-  EXPECT_FALSE(tesseract_common::satisfiesPositionLimits(v, limits, std::numeric_limits<double>::epsilon()));
-  tesseract_common::enforcePositionLimits(v, limits);
-  EXPECT_TRUE(tesseract_common::satisfiesPositionLimits(v, limits, std::numeric_limits<double>::epsilon()));
+  EXPECT_FALSE(tesseract_common::isWithinPositionLimits<double>(v, limits));
+  EXPECT_TRUE(tesseract_common::satisfiesPositionLimits<double>(v, limits, std::numeric_limits<float>::epsilon()));
+  EXPECT_FALSE(tesseract_common::satisfiesPositionLimits<double>(v, limits, std::numeric_limits<double>::epsilon()));
+  tesseract_common::enforcePositionLimits<double>(v, limits);
+  EXPECT_TRUE(tesseract_common::satisfiesPositionLimits<double>(v, limits, std::numeric_limits<double>::epsilon()));
 
   v = -Eigen::VectorXd::Ones(6);
   v = v.array() - std::numeric_limits<float>::epsilon();
 
-  EXPECT_TRUE(tesseract_common::satisfiesPositionLimits(v, limits, std::numeric_limits<float>::epsilon()));
-  EXPECT_FALSE(tesseract_common::satisfiesPositionLimits(v, limits, std::numeric_limits<double>::epsilon()));
-  tesseract_common::enforcePositionLimits(v, limits);
-  EXPECT_TRUE(tesseract_common::satisfiesPositionLimits(v, limits, std::numeric_limits<double>::epsilon()));
+  EXPECT_FALSE(tesseract_common::isWithinPositionLimits<double>(v, limits));
+  EXPECT_TRUE(tesseract_common::satisfiesPositionLimits<double>(v, limits, std::numeric_limits<float>::epsilon()));
+  EXPECT_FALSE(tesseract_common::satisfiesPositionLimits<double>(v, limits, std::numeric_limits<double>::epsilon()));
+  tesseract_common::enforcePositionLimits<double>(v, limits);
+  EXPECT_TRUE(tesseract_common::satisfiesPositionLimits<double>(v, limits, std::numeric_limits<double>::epsilon()));
 
   // Check that clamp is done correctly on both sides
   v = Eigen::VectorXd::Constant(6, -2);
-  EXPECT_FALSE(tesseract_common::satisfiesPositionLimits(v, limits, std::numeric_limits<double>::epsilon()));
-  tesseract_common::enforcePositionLimits(v, limits);
+  EXPECT_FALSE(tesseract_common::isWithinPositionLimits<double>(v, limits));
+  EXPECT_FALSE(tesseract_common::satisfiesPositionLimits<double>(v, limits, std::numeric_limits<double>::epsilon()));
+  tesseract_common::enforcePositionLimits<double>(v, limits);
   ASSERT_EQ((v - limits.col(0)).norm(), 0);
 
   v = Eigen::VectorXd::Constant(6, 2);
-  EXPECT_FALSE(tesseract_common::satisfiesPositionLimits(v, limits, std::numeric_limits<double>::epsilon()));
-  tesseract_common::enforcePositionLimits(v, limits);
+  EXPECT_FALSE(tesseract_common::isWithinPositionLimits<double>(v, limits));
+  EXPECT_FALSE(tesseract_common::satisfiesPositionLimits<double>(v, limits, std::numeric_limits<double>::epsilon()));
+  tesseract_common::enforcePositionLimits<double>(v, limits);
   ASSERT_EQ((v - limits.col(1)).norm(), 0);
+
+  v = Eigen::VectorXd::Ones(6);
+  v = v.array() - std::numeric_limits<float>::epsilon();
+  EXPECT_TRUE(tesseract_common::isWithinPositionLimits<double>(v, limits));
+
+  v = Eigen::VectorXd::Ones(6);
+  v(3) = v(3) + std::numeric_limits<float>::epsilon();
+  EXPECT_FALSE(tesseract_common::isWithinPositionLimits<double>(v, limits));
+
+  v = -Eigen::VectorXd::Ones(6);
+  v(3) = v(3) - std::numeric_limits<float>::epsilon();
+  EXPECT_FALSE(tesseract_common::isWithinPositionLimits<double>(v, limits));
 }
 
 TEST(TesseractCommonUnit, isIdenticalUnit)  // NOLINT
@@ -470,7 +486,7 @@ TEST(TesseractCommonUnit, isIdenticalArrayUnit)  // NOLINT
     EXPECT_FALSE(equal);
   }
   {
-    // Clang-tidy catches unitialized arrays anyway, but check it just in case the caller isn't running clang-tidy
+    // Clang-tidy catches initialized arrays anyway, but check it just in case the caller isn't running clang-tidy
     std::array<int, 4> v1 = { 1, 2, 3, 6 };
     std::array<int, 4> v2;  // NOLINT
     bool equal = tesseract_common::isIdenticalArray<int, 4>(v1, v2);
@@ -973,7 +989,7 @@ TEST(TesseractContactManagersFactoryUnit, KinematicsPluginInfoYamlUnit)  // NOLI
 
       for (auto it = search_paths.begin(); it != search_paths.end(); ++it)
       {
-        EXPECT_TRUE(std::find(sp.begin(), sp.end(), it->as<std::string>()) != sp.end());
+        EXPECT_TRUE(sp.find(it->as<std::string>()) != sp.end());
       }
     }
 
@@ -983,7 +999,7 @@ TEST(TesseractContactManagersFactoryUnit, KinematicsPluginInfoYamlUnit)  // NOLI
 
       for (auto it = search_libraries.begin(); it != search_libraries.end(); ++it)
       {
-        EXPECT_TRUE(std::find(sl.begin(), sl.end(), it->as<std::string>()) != sl.end());
+        EXPECT_TRUE(sl.find(it->as<std::string>()) != sl.end());
       }
     }
 
@@ -1218,7 +1234,7 @@ TEST(TesseractContactManagersFactoryUnit, ContactManagersPluginInfoYamlUnit)  //
 
       for (auto it = search_paths.begin(); it != search_paths.end(); ++it)
       {
-        EXPECT_TRUE(std::find(sp.begin(), sp.end(), it->as<std::string>()) != sp.end());
+        EXPECT_TRUE(sp.find(it->as<std::string>()) != sp.end());
       }
     }
 
@@ -1228,7 +1244,7 @@ TEST(TesseractContactManagersFactoryUnit, ContactManagersPluginInfoYamlUnit)  //
 
       for (auto it = search_libraries.begin(); it != search_libraries.end(); ++it)
       {
-        EXPECT_TRUE(std::find(sl.begin(), sl.end(), it->as<std::string>()) != sl.end());
+        EXPECT_TRUE(sl.find(it->as<std::string>()) != sl.end());
       }
     }
 
