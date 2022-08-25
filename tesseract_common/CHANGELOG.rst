@@ -2,6 +2,22 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.13.1 (2022-08-25)
+-------------------
+* Add tesseract extension macro
+* Move most SWIG commands to tesseract_python package (`#809 <https://github.com/tesseract-robotics/tesseract/issues/809>`_)
+* Add isNull method to TypeErasureBase
+* Fix TypeErasure to fully support being null
+* Add find_bullet macro which creates a target to link against (`#803 <https://github.com/tesseract-robotics/tesseract/issues/803>`_)
+* Update almostEqualRelativeAndAbs to support vector of max_diff and max_rel_diff (`#802 <https://github.com/tesseract-robotics/tesseract/issues/802>`_)
+* Contributors: John Wason, Levi Armstrong
+
+0.13.0 (2022-07-11)
+-------------------
+* Update code based on clang-tidy-14
+* Make limits utility functions templates
+* Contributors: Levi Armstrong
+
 0.10.0 (2022-07-06)
 -------------------
 * Update ros_industrial_cmake_boilerplate to 0.3.0 (`#795 <https://github.com/tesseract-robotics/tesseract/issues/795>`_)
