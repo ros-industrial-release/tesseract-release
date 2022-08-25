@@ -40,9 +40,10 @@ KinematicGroup::KinematicGroup(std::string name,
                                InverseKinematics::UPtr inv_kin,
                                const tesseract_scene_graph::SceneGraph& scene_graph,
                                const tesseract_scene_graph::SceneState& scene_state)
-  : JointGroup(std::move(name), joint_names, scene_graph, scene_state), joint_names_(std::move(joint_names))
+  : JointGroup(std::move(name), joint_names, scene_graph, scene_state)
+  , joint_names_(std::move(joint_names))
+  , inv_kin_(std::move(inv_kin))
 {
-  inv_kin_ = std::move(inv_kin);
   std::vector<std::string> inv_kin_joint_names = inv_kin_->getJointNames();
 
   if (static_cast<Eigen::Index>(joint_names_.size()) != inv_kin_->numJoints())
@@ -155,7 +156,7 @@ IKSolutions KinematicGroup::calcInvKin(const KinGroupIKInputs& tip_link_poses,
       for (Eigen::Index i = 0; i < inv_kin_->numJoints(); ++i)
         ordered_sol(i) = solution(inv_kin_joint_map_[static_cast<std::size_t>(i)]);
 
-      if (tesseract_common::satisfiesPositionLimits(ordered_sol, limits_.joint_limits))
+      if (tesseract_common::satisfiesPositionLimits<double>(ordered_sol, limits_.joint_limits))
         solutions_filtered.push_back(ordered_sol);
     }
 
@@ -167,7 +168,7 @@ IKSolutions KinematicGroup::calcInvKin(const KinGroupIKInputs& tip_link_poses,
   solutions_filtered.reserve(solutions.size());
   for (auto& solution : solutions)
   {
-    if (tesseract_common::satisfiesPositionLimits(solution, limits_.joint_limits))
+    if (tesseract_common::satisfiesPositionLimits<double>(solution, limits_.joint_limits))
       solutions_filtered.push_back(solution);
   }
 
