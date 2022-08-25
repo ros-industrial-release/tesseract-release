@@ -434,7 +434,7 @@ struct TestAtomic
     value = other.value.load();
     return *this;
   }
-  TestAtomic(TestAtomic&& other) noexcept { value = other.value.load(); }
+  TestAtomic(TestAtomic&& other) noexcept : value(other.value.load()) {}
   TestAtomic& operator=(TestAtomic&& other) noexcept
   {
     value = other.value.load();
@@ -460,6 +460,36 @@ TEST(TesseractCommonSerializeUnit, StdAtomic)  // NOLINT
   TestAtomic object;
   object.value = true;
   tesseract_common::testSerialization<TestAtomic>(object, "TestAtomic");
+}
+
+struct ExtensionMacroTestA
+{
+  double a{ 0 };
+};
+
+TESSERACT_CLASS_EXTENSION(ExtensionMacroTestA, "etax", "etab")
+
+struct ExtensionMacroTestB
+{
+  double b{ 0 };
+};
+
+TEST(TesseractCommonSerializeUnit, ExtensionXmlMacro)  // NOLINT
+{
+  std::string ext = tesseract_common::serialization::xml::extension<ExtensionMacroTestA>::value;
+  EXPECT_EQ(ext, "etax");
+
+  std::string default_ext = tesseract_common::serialization::xml::extension<ExtensionMacroTestB>::value;
+  EXPECT_EQ(default_ext, "trsx");
+}
+
+TEST(TesseractCommonSerializeUnit, ExtensionBinaryMacro)  // NOLINT
+{
+  std::string ext = tesseract_common::serialization::binary::extension<ExtensionMacroTestA>::value;
+  EXPECT_EQ(ext, "etab");
+
+  std::string default_ext = tesseract_common::serialization::binary::extension<ExtensionMacroTestB>::value;
+  EXPECT_EQ(default_ext, "trsb");
 }
 
 int main(int argc, char** argv)
