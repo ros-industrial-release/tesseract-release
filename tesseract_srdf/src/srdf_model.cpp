@@ -28,6 +28,7 @@
 TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 #include <boost/serialization/array.hpp>
 #include <boost/serialization/shared_ptr.hpp>
+#include <boost/serialization/nvp.hpp>
 #include <unordered_map>
 #include <vector>
 #include <utility>
@@ -47,9 +48,9 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_srdf/configs.h>
 #include <tesseract_srdf/srdf_model.h>
 #include <tesseract_srdf/utils.h>
-#include <tesseract_common/serialization.h>
 #include <tesseract_common/utils.h>
 #include <tesseract_common/yaml_utils.h>
+#include <tesseract_common/eigen_serialization.h>
 
 namespace tesseract_srdf
 {
@@ -449,8 +450,8 @@ void SRDFModel::serialize(Archive& ar, const unsigned int /*version*/)
   ar& BOOST_SERIALIZATION_NVP(calibration_info);
 }
 
+}  // namespace tesseract_srdf
+
 #include <tesseract_common/serialization.h>
 TESSERACT_SERIALIZE_ARCHIVES_INSTANTIATE(tesseract_srdf::SRDFModel)
-// This causes build failures for some reason, but it seems to work without it
-// BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_srdf::SRDFModel)
-}  // namespace tesseract_srdf
+BOOST_CLASS_EXPORT_IMPLEMENT(tesseract_srdf::SRDFModel)
