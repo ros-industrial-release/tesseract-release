@@ -40,11 +40,6 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_geometry/geometry.h>
 #include <tesseract_geometry/impl/mesh_material.h>
 
-#ifdef SWIG
-%shared_ptr(tesseract_geometry::PolygonMesh)
-%template(PolygonMeshVector) std::vector<std::shared_ptr<tesseract_geometry::PolygonMesh> >;
-#endif  // SWIG
-
 namespace tesseract_geometry
 {
 class PolygonMesh : public Geometry
@@ -84,6 +79,7 @@ public:
     : Geometry(type)
     , vertices_(std::move(vertices))
     , faces_(std::move(faces))
+    , vertex_count_(static_cast<int>(vertices_->size()))
     , resource_(std::move(resource))
     , scale_(scale)
     , normals_(std::move(normals))
@@ -91,9 +87,6 @@ public:
     , mesh_material_(std::move(mesh_material))
     , mesh_textures_(std::move(mesh_textures))
   {
-    vertex_count_ = static_cast<int>(vertices_->size());
-
-    face_count_ = 0;
     for (int i = 0; i < faces_->size(); ++i)
     {
       ++face_count_;
@@ -132,6 +125,7 @@ public:
     : Geometry(type)
     , vertices_(std::move(vertices))
     , faces_(std::move(faces))
+    , vertex_count_(static_cast<int>(vertices_->size()))
     , face_count_(face_count)
     , resource_(std::move(resource))
     , scale_(scale)
@@ -140,7 +134,6 @@ public:
     , mesh_material_(std::move(mesh_material))
     , mesh_textures_(std::move(mesh_textures))
   {
-    vertex_count_ = static_cast<int>(vertices_->size());
   }
 
   PolygonMesh() = default;
