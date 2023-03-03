@@ -2,6 +2,18 @@
 Changelog for package tesseract_kinematics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.15.0 (2023-03-03)
+-------------------
+* Performance improvements found using callgrind (`#852 <https://github.com/tesseract-robotics/tesseract/issues/852>`_)
+* Closes `#848 <https://github.com/tesseract-robotics/tesseract/issues/848>`_
+* Contributors: Levi Armstrong, Roelof Oomen
+
+0.14.0 (2022-10-23)
+-------------------
+* Remove deprecated items
+* Fix codecov build using ros_industrial_cmake_boilerplate 0.3.1
+* Contributors: Levi Armstrong
+
 0.13.1 (2022-08-25)
 -------------------
 * Move most SWIG commands to tesseract_python package (`#809 <https://github.com/tesseract-robotics/tesseract/issues/809>`_)
