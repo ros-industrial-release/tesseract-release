@@ -102,7 +102,7 @@ void SRDFModel::initString(const tesseract_scene_graph::SceneGraph& scene_graph,
     std::throw_with_nested(std::runtime_error("SRDF: Missing 'robot' element in the xml file!"));
 
   if (srdf_xml == nullptr || std::strncmp(srdf_xml->Name(), "robot", 5) != 0)
-    std::throw_with_nested(std::runtime_error("SRDF: Missing 'robot' element in the xml file!"));
+    std::throw_with_nested(std::runtime_error("SRDF: Missing 'robot' element in the xml file!"));  // LCOV_EXCL_LINE
 
   // get the robot name
   status = tesseract_common::QueryStringAttributeRequired(srdf_xml, "name", name);
@@ -116,7 +116,7 @@ void SRDFModel::initString(const tesseract_scene_graph::SceneGraph& scene_graph,
   status = tesseract_common::QueryStringAttribute(srdf_xml, "version", version_string);
   if (status != tinyxml2::XML_NO_ATTRIBUTE && status != tinyxml2::XML_SUCCESS)
   {
-    std::throw_with_nested(std::runtime_error("SRDF: Failed to parse attribute 'version'!"));
+    std::throw_with_nested(std::runtime_error("SRDF: Failed to parse attribute 'version'!"));  // LCOV_EXCL_LINE
   }
   else if (status != tinyxml2::XML_NO_ATTRIBUTE)
   {
@@ -350,6 +350,18 @@ bool SRDFModel::saveToFile(const std::string& file_path) const
     xml_root->InsertEndChild(xml_kin_plugin_entry);
   }
 
+  if (!contact_managers_plugin_info.empty())
+  {
+    tesseract_common::fs::path p(file_path);
+    std::ofstream fout(p.parent_path().append("contact_managers_plugin_config.yaml").string());
+    YAML::Node config;
+    config[tesseract_common::ContactManagersPluginInfo::CONFIG_KEY] = contact_managers_plugin_info;
+    fout << config;
+    tinyxml2::XMLElement* xml_kin_plugin_entry = doc.NewElement("contact_managers_plugin_config");
+    xml_kin_plugin_entry->SetAttribute("filename", "contact_managers_plugin_config.yaml");
+    xml_root->InsertEndChild(xml_kin_plugin_entry);
+  }
+
   if (!calibration_info.empty())
   {
     tesseract_common::fs::path p(file_path);
@@ -390,24 +402,14 @@ bool SRDFModel::saveToFile(const std::string& file_path) const
     }
   }
 
-  if (!contact_managers_plugin_info.empty())
-  {
-    tesseract_common::fs::path p(file_path);
-    std::ofstream fout(p.parent_path().append("contact_managers_plugin_config.yaml").string());
-    YAML::Node config;
-    config[tesseract_common::ContactManagersPluginInfo::CONFIG_KEY] = contact_managers_plugin_info;
-    fout << config;
-    tinyxml2::XMLElement* xml_kin_plugin_entry = doc.NewElement("contact_managers_plugin_config");
-    xml_kin_plugin_entry->SetAttribute("filename", "contact_managers_plugin_config.yaml");
-    xml_root->InsertEndChild(xml_kin_plugin_entry);
-  }
-
   doc.InsertFirstChild(xml_root);
   tinyxml2::XMLError status = doc.SaveFile(file_path.c_str());
   if (status != tinyxml2::XMLError::XML_SUCCESS)
   {
+    // LCOV_EXCL_START
     CONSOLE_BRIDGE_logError("Failed to save SRDF XML File: %s", file_path.c_str());
     return false;
+    // LCOV_EXCL_STOP
   }
 
   return true;

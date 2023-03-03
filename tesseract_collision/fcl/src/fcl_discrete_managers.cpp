@@ -115,10 +115,24 @@ bool FCLDiscreteBVHManager::removeCollisionObject(const std::string& name)
   {
     std::vector<CollisionObjectPtr>& objects = it->second->getCollisionObjects();
     fcl_co_count_ -= objects.size();
+
+    std::vector<fcl::CollisionObject<double>*> static_objs;
+    static_manager_->getObjects(static_objs);
+
+    std::vector<fcl::CollisionObject<double>*> dynamic_objs;
+    dynamic_manager_->getObjects(dynamic_objs);
+
+    // Must check if object exists in the manager before calling unregister.
+    // If it does not exist and unregister is called it is undefined behavior
     for (auto& co : objects)
     {
-      static_manager_->unregisterObject(co.get());
-      dynamic_manager_->unregisterObject(co.get());
+      auto static_it = std::find(static_objs.begin(), static_objs.end(), co.get());
+      if (static_it != static_objs.end())
+        static_manager_->unregisterObject(co.get());
+
+      auto dynamic_it = std::find(dynamic_objs.begin(), dynamic_objs.end(), co.get());
+      if (dynamic_it != dynamic_objs.end())
+        dynamic_manager_->unregisterObject(co.get());
     }
 
     collision_objects_.erase(std::find(collision_objects_.begin(), collision_objects_.end(), name));
@@ -296,34 +310,6 @@ void FCLDiscreteBVHManager::setPairCollisionMarginData(const std::string& name1,
 const CollisionMarginData& FCLDiscreteBVHManager::getCollisionMarginData() const { return collision_margin_data_; }
 void FCLDiscreteBVHManager::setIsContactAllowedFn(IsContactAllowedFn fn) { fn_ = fn; }
 IsContactAllowedFn FCLDiscreteBVHManager::getIsContactAllowedFn() const { return fn_; }
-
-/**
- * @brief This is used to perform self check for fcl. The AABB Tree self check is N^2 which is slow and it is faster
- *        to loop over the shapes and check bounding boxes.
- * @param cdata The contact test data passed to the callback
- * @param dynamic_manager The dynamics manager to perform self check on
- * @param callback The callback function to call if bounding boxes overlap
- */
-void selfCollisionContactTest(ContactTestData& cdata,
-                              const std::unique_ptr<fcl::BroadPhaseCollisionManagerd>& dynamic_manager,
-                              fcl::CollisionCallBack<double> callback)
-{
-  std::vector<fcl::CollisionObjectd*> co;
-  dynamic_manager->getObjects(co);
-  for (auto it1 = co.begin(), end = co.end(); it1 != end; ++it1)
-  {
-    auto it2 = it1;
-    it2++;
-    for (; it2 != end; ++it2)
-    {
-      if ((*it1)->getAABB().overlap((*it2)->getAABB()))
-      {
-        if (callback(*it1, *it2, &cdata))
-          return;
-      }
-    }
-  }
-}
 
 void FCLDiscreteBVHManager::contactTest(ContactResultMap& collisions, const ContactRequest& request)
 {
