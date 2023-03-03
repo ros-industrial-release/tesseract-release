@@ -2,6 +2,24 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.15.0 (2023-03-03)
+-------------------
+* Performance improvements found using callgrind (`#852 <https://github.com/tesseract-robotics/tesseract/issues/852>`_)
+* Update TaskComposerPluginInfo
+* Improve tesseract_state_solver code coverage
+* Fix tesseract_common plugin info implementations equal and insert methods
+* Contributors: Levi Armstrong
+
+0.14.0 (2022-10-23)
+-------------------
+* Add general resource locator
+* Remove deprecated items
+* Add fileToString utility function
+* Rename Any to AnyPoly
+* Remove StatusCode and fix eigen being passed by value in JointState
+* Including <boost/serialization/library_version_type.hpp> for Boost 1.74. Fixes `tesseract-robotics/tesseract#764 <https://github.com/tesseract-robotics/tesseract/issues/764>`_
+* Contributors: Levi Armstrong, Roelof Oomen
+
 0.13.1 (2022-08-25)
 -------------------
 * Add tesseract extension macro
