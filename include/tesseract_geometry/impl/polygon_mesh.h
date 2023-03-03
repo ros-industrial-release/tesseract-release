@@ -151,17 +151,6 @@ public:
    */
   const std::shared_ptr<const Eigen::VectorXi>& getFaces() const { return faces_; }
 
-#ifndef SWIG
-  /**
-   * @brief Get vertex count
-   * @return Number of vertices
-   */
-  [[deprecated("Deprecated due to typo.  Please use getVertexCount()")]] int getVerticeCount() const
-  {
-    return getVertexCount();
-  }
-#endif  // SWIG
-
   /**
    * @brief Get vertex count
    * @return Number of vertices
@@ -255,6 +244,6 @@ private:
 };
 
 }  // namespace tesseract_geometry
-#include <boost/serialization/tracking.hpp>
+
 BOOST_CLASS_EXPORT_KEY2(tesseract_geometry::PolygonMesh, "PolygonMesh")
 #endif  // POLYGON_MESH_H
