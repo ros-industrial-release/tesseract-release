@@ -68,12 +68,23 @@ inline void runTest(DiscreteContactManager& checker, const std::string& file_pat
   // Add collision object
   detail::addCollisionObjects(checker);
 
+  // Call it again to test adding same object
+  detail::addCollisionObjects(checker);
+
   //////////////////////////////////////
   // Test when object is in collision
   //////////////////////////////////////
-  checker.setActiveCollisionObjects({ "octomap_link", "plane_link" });
-  checker.setCollisionMarginData(CollisionMarginData(0.1));
-  EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.1, 1e-5);
+  std::vector<std::string> active_links{ "octomap_link", "plane_link" };
+  checker.setActiveCollisionObjects(active_links);
+  std::vector<std::string> check_active_links = checker.getActiveCollisionObjects();
+  EXPECT_TRUE(tesseract_common::isIdentical<std::string>(active_links, check_active_links, false));
+
+  EXPECT_TRUE(checker.getIsContactAllowedFn() == nullptr);
+
+  checker.setCollisionMarginData(CollisionMarginData(0.5));
+  EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.5, 1e-5);
+
+  checker.setPairCollisionMarginData("octomap_link", "plane_link", 0.1);
 
   // Set the collision object transforms
   tesseract_common::TransformMap location;
@@ -87,7 +98,7 @@ inline void runTest(DiscreteContactManager& checker, const std::string& file_pat
   checker.contactTest(result, ContactRequest(ContactTestType::ALL));
 
   ContactResultVector result_vector;
-  flattenResults(std::move(result), result_vector);
+  flattenMoveResults(std::move(result), result_vector);
 
   const tesseract_collision::CollisionShapesConst& geom = checker.getCollisionObjectGeometries("plane_link");
   const auto& mesh = std::static_pointer_cast<const tesseract_geometry::Mesh>(geom.at(0));

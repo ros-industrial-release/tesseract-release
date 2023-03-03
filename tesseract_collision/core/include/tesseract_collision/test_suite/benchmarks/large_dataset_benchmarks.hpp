@@ -25,29 +25,33 @@ static void BM_LARGE_DATASET_MULTILINK(benchmark::State& state,
   // Add Meshed Sphere to checker
   CollisionShapePtr sphere;
 
-  tesseract_common::VectorVector3d mesh_vertices;
-  Eigen::VectorXi mesh_faces;
-  loadSimplePlyFile(std::string(TESSERACT_SUPPORT_DIR) + "/meshes/sphere_p25m.ply", mesh_vertices, mesh_faces);
-
-  // This is required because convex hull cannot have multiple faces on the same plane.
-  auto ch_verticies = std::make_shared<tesseract_common::VectorVector3d>();
-  auto ch_faces = std::make_shared<Eigen::VectorXi>();
-  int ch_num_faces = createConvexHull(*ch_verticies, *ch_faces, mesh_vertices);
+  auto mesh_vertices = std::make_shared<tesseract_common::VectorVector3d>();
+  auto mesh_faces = std::make_shared<Eigen::VectorXi>();
+  loadSimplePlyFile(std::string(TESSERACT_SUPPORT_DIR) + "/meshes/sphere_p25m.ply", *mesh_vertices, *mesh_faces, true);
 
   switch (type)
   {
     case tesseract_geometry::GeometryType::CONVEX_MESH:
-      sphere = std::make_shared<tesseract_geometry::ConvexMesh>(ch_verticies, ch_faces, ch_num_faces);
+    {
+      auto mesh = std::make_shared<tesseract_geometry::Mesh>(mesh_vertices, mesh_faces);
+      sphere = makeConvexMesh(*mesh);
       break;
+    }
     case tesseract_geometry::GeometryType::MESH:
-      sphere = std::make_shared<tesseract_geometry::Mesh>(ch_verticies, ch_faces, ch_num_faces);
+    {
+      sphere = std::make_shared<tesseract_geometry::Mesh>(mesh_vertices, mesh_faces);
       break;
+    }
     case tesseract_geometry::GeometryType::SPHERE:
+    {
       sphere = std::make_shared<tesseract_geometry::Sphere>(0.25);
       break;
+    }
     default:
+    {
       throw(std::runtime_error("Invalid geometry type"));
       break;
+    }
   }
 
   double delta = 0.55;
@@ -90,9 +94,9 @@ static void BM_LARGE_DATASET_MULTILINK(benchmark::State& state,
     ContactResultMap result;
     result_vector.clear();
     checker->contactTest(result, ContactTestType::ALL);
-    flattenResults(std::move(result), result_vector);
+    flattenMoveResults(std::move(result), result_vector);
   }
-};
+}
 
 /** @brief Benchmark that checks collisions between a lot of objects. In this case it is a grid of spheres in one link
  * and a single sphere in another link*/
@@ -104,29 +108,33 @@ static void BM_LARGE_DATASET_SINGLELINK(benchmark::State& state,
   // Add Meshed Sphere to checker
   CollisionShapePtr sphere;
 
-  tesseract_common::VectorVector3d mesh_vertices;
-  Eigen::VectorXi mesh_faces;
-  loadSimplePlyFile(std::string(TESSERACT_SUPPORT_DIR) + "/meshes/sphere_p25m.ply", mesh_vertices, mesh_faces);
-
-  // This is required because convex hull cannot have multiple faces on the same plane.
-  auto ch_verticies = std::make_shared<tesseract_common::VectorVector3d>();
-  auto ch_faces = std::make_shared<Eigen::VectorXi>();
-  int ch_num_faces = createConvexHull(*ch_verticies, *ch_faces, mesh_vertices);
+  auto mesh_vertices = std::make_shared<tesseract_common::VectorVector3d>();
+  auto mesh_faces = std::make_shared<Eigen::VectorXi>();
+  loadSimplePlyFile(std::string(TESSERACT_SUPPORT_DIR) + "/meshes/sphere_p25m.ply", *mesh_vertices, *mesh_faces, true);
 
   switch (type)
   {
     case tesseract_geometry::GeometryType::CONVEX_MESH:
-      sphere = std::make_shared<tesseract_geometry::ConvexMesh>(ch_verticies, ch_faces, ch_num_faces);
+    {
+      auto mesh = std::make_shared<tesseract_geometry::Mesh>(mesh_vertices, mesh_faces);
+      sphere = makeConvexMesh(*mesh);
       break;
+    }
     case tesseract_geometry::GeometryType::MESH:
-      sphere = std::make_shared<tesseract_geometry::Mesh>(ch_verticies, ch_faces, ch_num_faces);
+    {
+      sphere = std::make_shared<tesseract_geometry::Mesh>(mesh_vertices, mesh_faces);
       break;
+    }
     case tesseract_geometry::GeometryType::SPHERE:
+    {
       sphere = std::make_shared<tesseract_geometry::Sphere>(0.25);
       break;
+    }
     default:
+    {
       throw(std::runtime_error("Invalid geometry type"));
       break;
+    }
   }
 
   // Add Grid of spheres
@@ -180,9 +188,9 @@ static void BM_LARGE_DATASET_SINGLELINK(benchmark::State& state,
     ContactResultMap result;
     result_vector.clear();
     checker->contactTest(result, ContactTestType::ALL);
-    flattenResults(std::move(result), result_vector);
+    flattenMoveResults(std::move(result), result_vector);
   }
-};
+}
 
 }  // namespace test_suite
 }  // namespace tesseract_collision

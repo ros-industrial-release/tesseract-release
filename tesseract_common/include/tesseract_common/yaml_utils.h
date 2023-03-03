@@ -35,6 +35,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_PUSH
 TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 #include <tesseract_common/types.h>
+#include <tesseract_common/utils.h>
 
 namespace tesseract_common
 {
@@ -61,9 +62,85 @@ inline YAML::Node fromYAMLString(const std::string& string) { return YAML::Load(
  * @param node1 Input YAML::Node
  * @param node2 Input YAML::Node
  */
-inline bool isIdentical(const YAML::Node& node1, const YAML::Node& node2)
+inline bool compareYAML(const YAML::Node& node1, const YAML::Node& node2)
 {
-  return toYAMLString(node1) == toYAMLString(node2);
+  if (node1.is(node2))
+    return true;
+
+  if (node1.Type() != node2.Type())
+    return false;
+
+  switch (node1.Type())
+  {
+    case YAML::NodeType::Scalar:
+    {
+      try
+      {
+        auto v1 = node1.as<bool>();
+        auto v2 = node2.as<bool>();
+        return (v1 == v2);
+      }
+      catch (YAML::TypedBadConversion<bool>& /*e*/)
+      {
+        try
+        {
+          auto v1 = node1.as<int>();
+          auto v2 = node2.as<int>();
+          return (v1 == v2);
+        }
+        catch (YAML::TypedBadConversion<int>& /*e*/)
+        {
+          try
+          {
+            auto v1 = node1.as<double>();
+            auto v2 = node2.as<double>();
+            return almostEqualRelativeAndAbs(v1, v2, 1e-6, std::numeric_limits<float>::epsilon());
+          }
+          catch (YAML::TypedBadConversion<double>& /*e*/)
+          {
+            try
+            {
+              auto v1 = node1.as<std::string>();
+              auto v2 = node2.as<std::string>();
+              return (v1 == v2);
+            }
+            catch (YAML::TypedBadConversion<std::string>& /*e*/)
+            {
+              return false;
+            }
+          }
+        }
+      }
+    }
+    case YAML::NodeType::Null:
+      return true;
+    case YAML::NodeType::Undefined:
+      return false;
+    case YAML::NodeType::Map:
+    case YAML::NodeType::Sequence:
+      if (node1.size() != node2.size())
+        return false;
+  }
+
+  if (node1.IsMap())
+  {
+    bool result = true;
+    for (YAML::const_iterator it1 = node1.begin(), it2; it1 != node1.end() && result; ++it1)
+    {
+      for (it2 = node2.begin(); it2 != node2.end(); ++it2)
+      {
+        if (compareYAML(it1->first, it2->first))
+          break;
+      }
+      if (it2 == node2.end())
+        return false;
+
+      result = compareYAML(it1->second, it2->second);
+    }
+    return result;
+  }
+
+  return std::equal(node1.begin(), node1.end(), node2.begin(), compareYAML);
 }
 }  // namespace tesseract_common
 
@@ -218,7 +295,7 @@ struct convert<Eigen::Isometry3d>
       Eigen::AngleAxisd pitchAngle(p, Eigen::Vector3d::UnitY());
       Eigen::AngleAxisd yawAngle(y, Eigen::Vector3d::UnitZ());
 
-      Eigen::Quaterniond rpy = yawAngle * pitchAngle * rollAngle;
+      Eigen::Quaterniond rpy{ yawAngle * pitchAngle * rollAngle };
 
       out.linear() = rpy.toRotationMatrix();
     }
@@ -408,7 +485,7 @@ struct convert<tesseract_common::ContactManagersPluginInfo>
     if (!rhs.discrete_plugin_infos.plugins.empty())
       contact_manager_plugins[DISCRETE_PLUGINS_KEY] = rhs.discrete_plugin_infos;
 
-    if (!rhs.discrete_plugin_infos.plugins.empty())
+    if (!rhs.continuous_plugin_infos.plugins.empty())
       contact_manager_plugins[CONTINUOUS_PLUGINS_KEY] = rhs.continuous_plugin_infos;
 
     return contact_manager_plugins;
@@ -483,6 +560,110 @@ struct convert<tesseract_common::ContactManagersPluginInfo>
       catch (const std::exception& e)
       {
         throw std::runtime_error("ContactManagersPluginFactory: Constructor failed to cast '" + CONTINUOUS_PLUGINS_KEY +
+                                 "' to tesseract_common::PluginInfoContainer! Details: " + e.what());
+      }
+    }
+
+    return true;
+  }
+};
+
+template <>
+struct convert<tesseract_common::TaskComposerPluginInfo>
+{
+  static Node encode(const tesseract_common::TaskComposerPluginInfo& rhs)
+  {
+    const std::string SEARCH_PATHS_KEY{ "search_paths" };
+    const std::string SEARCH_LIBRARIES_KEY{ "search_libraries" };
+    const std::string EXECUTOR_PLUGINS_KEY{ "executors" };
+    const std::string NODE_PLUGINS_KEY{ "tasks" };
+
+    YAML::Node task_composer_plugins;
+    if (!rhs.search_paths.empty())
+      task_composer_plugins[SEARCH_PATHS_KEY] = rhs.search_paths;
+
+    if (!rhs.search_libraries.empty())
+      task_composer_plugins[SEARCH_LIBRARIES_KEY] = rhs.search_libraries;
+
+    if (!rhs.executor_plugin_infos.plugins.empty())
+      task_composer_plugins[EXECUTOR_PLUGINS_KEY] = rhs.executor_plugin_infos;
+
+    if (!rhs.task_plugin_infos.plugins.empty())
+      task_composer_plugins[NODE_PLUGINS_KEY] = rhs.task_plugin_infos;
+
+    return task_composer_plugins;
+  }
+
+  static bool decode(const Node& node, tesseract_common::TaskComposerPluginInfo& rhs)
+  {
+    const std::string SEARCH_PATHS_KEY{ "search_paths" };
+    const std::string SEARCH_LIBRARIES_KEY{ "search_libraries" };
+    const std::string EXECUTOR_PLUGINS_KEY{ "executors" };
+    const std::string NODE_PLUGINS_KEY{ "tasks" };
+
+    if (const YAML::Node& search_paths = node[SEARCH_PATHS_KEY])
+    {
+      std::set<std::string> sp;
+      try
+      {
+        sp = search_paths.as<std::set<std::string>>();
+      }
+      catch (const std::exception& e)
+      {
+        throw std::runtime_error("TaskComposerPluginInfo: Constructor failed to cast '" + SEARCH_PATHS_KEY +
+                                 "' to std::set<std::string>! "
+                                 "Details: " +
+                                 e.what());
+      }
+      rhs.search_paths.insert(sp.begin(), sp.end());
+    }
+
+    if (const YAML::Node& search_libraries = node[SEARCH_LIBRARIES_KEY])
+    {
+      std::set<std::string> sl;
+      try
+      {
+        sl = search_libraries.as<std::set<std::string>>();
+      }
+      catch (const std::exception& e)
+      {
+        throw std::runtime_error("TaskComposerPluginInfo: Constructor failed to cast '" + SEARCH_LIBRARIES_KEY +
+                                 "' to std::set<std::string>! "
+                                 "Details: " +
+                                 e.what());
+      }
+      rhs.search_libraries.insert(sl.begin(), sl.end());
+    }
+
+    if (const YAML::Node& executor_plugins = node[EXECUTOR_PLUGINS_KEY])
+    {
+      if (!executor_plugins.IsMap())
+        throw std::runtime_error(EXECUTOR_PLUGINS_KEY + ", should contain a map of task composer executor names to "
+                                                        "plugins!");
+
+      try
+      {
+        rhs.executor_plugin_infos = executor_plugins.as<tesseract_common::PluginInfoContainer>();
+      }
+      catch (const std::exception& e)
+      {
+        throw std::runtime_error("TaskComposerPluginInfo: Constructor failed to cast '" + EXECUTOR_PLUGINS_KEY +
+                                 "' to tesseract_common::PluginInfoContainer! Details: " + e.what());
+      }
+    }
+
+    if (const YAML::Node& node_plugins = node[NODE_PLUGINS_KEY])
+    {
+      if (!node_plugins.IsMap())
+        throw std::runtime_error(NODE_PLUGINS_KEY + ", should contain a map of names to plugins!");
+
+      try
+      {
+        rhs.task_plugin_infos = node_plugins.as<tesseract_common::PluginInfoContainer>();
+      }
+      catch (const std::exception& e)
+      {
+        throw std::runtime_error("TaskComposerPluginInfo: Constructor failed to cast '" + NODE_PLUGINS_KEY +
                                  "' to tesseract_common::PluginInfoContainer! Details: " + e.what());
       }
     }
