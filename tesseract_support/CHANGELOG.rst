@@ -2,6 +2,15 @@
 Changelog for package tesseract_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.15.0 (2023-03-03)
+-------------------
+* Fix tesseract_common plugin info implementations equal and insert methods
+* Fix KinematicsInformation equal and insert methods
+* Contributors: Levi Armstrong
+
+0.14.0 (2022-10-23)
+-------------------
+
 0.13.1 (2022-08-25)
 -------------------
 * Fix the Windows 2019 github action (`#805 <https://github.com/tesseract-robotics/tesseract/issues/805>`_)
