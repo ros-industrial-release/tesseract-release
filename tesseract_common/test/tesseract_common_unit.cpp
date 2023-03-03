@@ -12,7 +12,7 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 #include <tesseract_common/manipulator_info.h>
 #include <tesseract_common/joint_state.h>
 #include <tesseract_common/types.h>
-#include <tesseract_common/any.h>
+#include <tesseract_common/any_poly.h>
 #include <tesseract_common/kinematic_limits.h>
 #include <tesseract_common/yaml_utils.h>
 
@@ -309,7 +309,7 @@ TESSERACT_ANY_EXPORT(tesseract_common, JointState);  // NOLINT
 
 TEST(TesseractCommonUnit, anyUnit)  // NOLINT
 {
-  tesseract_common::Any any_type;
+  tesseract_common::AnyPoly any_type;
   EXPECT_TRUE(any_type.getType() == std::type_index(typeid(nullptr)));
 
   tesseract_common::JointState joint_state;
@@ -325,7 +325,7 @@ TEST(TesseractCommonUnit, anyUnit)  // NOLINT
   EXPECT_TRUE(any_type.as<tesseract_common::JointState>() == joint_state);
 
   // Check clone
-  tesseract_common::Any any_copy = any_type;
+  tesseract_common::AnyPoly any_copy = any_type;
   EXPECT_TRUE(any_copy == any_type);
 
   // Check to make sure it is not making a copy during cast
@@ -346,7 +346,7 @@ TEST(TesseractCommonUnit, anyUnit)  // NOLINT
     oa << BOOST_SERIALIZATION_NVP(any_type);
   }
 
-  tesseract_common::Any nany_type;
+  tesseract_common::AnyPoly nany_type;
   {
     std::ifstream ifs(tesseract_common::getTempPath() + "any_type_boost.xml");
     assert(ifs.good());
@@ -891,19 +891,23 @@ TEST(TesseractCommonUnit, kinematicsPluginInfoUnit)  // NOLINT
   {
     tesseract_common::PluginInfo pi;
     pi.class_name = "KDLFwdKin";
-    kpi.fwd_plugin_infos["manipulator"].plugins = { std::make_pair("KDLFwdKin", pi) };
+    kpi_insert.fwd_plugin_infos["manipulator"].plugins = { std::make_pair("KDLFwdKin", pi) };
+    kpi_insert.fwd_plugin_infos["manipulator"].default_plugin = "KDLFwdKin";
   }
 
   {
     tesseract_common::PluginInfo pi;
     pi.class_name = "KDLInvKin";
-    kpi.inv_plugin_infos["manipulator"].plugins = { std::make_pair("KDLInvKin", pi) };
+    kpi_insert.inv_plugin_infos["manipulator"].plugins = { std::make_pair("KDLInvKin", pi) };
+    kpi_insert.inv_plugin_infos["manipulator"].default_plugin = "KDLInvKin";
   }
 
   EXPECT_FALSE(kpi_insert.empty());
 
+  EXPECT_NE(kpi, kpi_insert);
   kpi.insert(kpi_insert);
   EXPECT_FALSE(kpi.empty());
+  EXPECT_EQ(kpi, kpi_insert);
 
   kpi.clear();
   EXPECT_TRUE(kpi.empty());
@@ -921,25 +925,63 @@ TEST(TesseractCommonUnit, ContactManagersPluginInfoUnit)  // NOLINT
   {
     tesseract_common::PluginInfo pi;
     pi.class_name = "DiscretePluginFactory";
-    cmpi.discrete_plugin_infos.plugins = { std::make_pair("DiscretePlugin", pi) };
+    cmpi_insert.discrete_plugin_infos.plugins = { std::make_pair("DiscretePlugin", pi) };
+    cmpi_insert.discrete_plugin_infos.default_plugin = "DiscretePlugin";
   }
 
   {
     tesseract_common::PluginInfo pi;
     pi.class_name = "ContinuousPluginFactory";
-    cmpi.continuous_plugin_infos.plugins = { std::make_pair("ContinuousPlugin", pi) };
+    cmpi_insert.continuous_plugin_infos.plugins = { std::make_pair("ContinuousPlugin", pi) };
+    cmpi_insert.continuous_plugin_infos.default_plugin = "ContinuousPlugin";
   }
 
   EXPECT_FALSE(cmpi_insert.empty());
 
+  EXPECT_NE(cmpi, cmpi_insert);
   cmpi.insert(cmpi_insert);
   EXPECT_FALSE(cmpi.empty());
+  EXPECT_EQ(cmpi, cmpi_insert);
 
   cmpi.clear();
   EXPECT_TRUE(cmpi.empty());
 }
 
-TEST(TesseractContactManagersFactoryUnit, KinematicsPluginInfoYamlUnit)  // NOLINT
+TEST(TesseractCommonUnit, TaskComposerPluginInfoUnit)  // NOLINT
+{
+  tesseract_common::TaskComposerPluginInfo tcpi;
+  EXPECT_TRUE(tcpi.empty());
+
+  tesseract_common::TaskComposerPluginInfo tcpi_insert;
+  tcpi_insert.search_paths.insert("/usr/local/lib");
+  tcpi_insert.search_libraries.insert("tesseract_collision");
+
+  {
+    tesseract_common::PluginInfo pi;
+    pi.class_name = "TaskComposerExecutorPluginFactory";
+    tcpi_insert.executor_plugin_infos.plugins = { std::make_pair("TaskComposerExecutorPlugin", pi) };
+    tcpi_insert.executor_plugin_infos.default_plugin = "TaskComposerExecutorPlugin";
+  }
+
+  {
+    tesseract_common::PluginInfo pi;
+    pi.class_name = "TaskComposerNodePluginFactory";
+    tcpi_insert.task_plugin_infos.plugins = { std::make_pair("TaskComposerNodePlugin", pi) };
+    tcpi_insert.task_plugin_infos.default_plugin = "TaskComposerNodePlugin";
+  }
+
+  EXPECT_FALSE(tcpi_insert.empty());
+
+  EXPECT_NE(tcpi, tcpi_insert);
+  tcpi.insert(tcpi_insert);
+  EXPECT_FALSE(tcpi.empty());
+  EXPECT_EQ(tcpi, tcpi_insert);
+
+  tcpi.clear();
+  EXPECT_TRUE(tcpi.empty());
+}
+
+TEST(TesseractPluginFactoryUnit, KinematicsPluginInfoYamlUnit)  // NOLINT
 {
   std::string yaml_string = R"(kinematic_plugins:
                                  search_paths:
@@ -1190,7 +1232,7 @@ TEST(TesseractContactManagersFactoryUnit, KinematicsPluginInfoYamlUnit)  // NOLI
   }
 }
 
-TEST(TesseractContactManagersFactoryUnit, ContactManagersPluginInfoYamlUnit)  // NOLINT
+TEST(TesseractPluginFactoryUnit, ContactManagersPluginInfoYamlUnit)  // NOLINT
 {
   std::string yaml_string = R"(contact_manager_plugins:
                                  search_paths:
@@ -1398,6 +1440,295 @@ TEST(TesseractContactManagersFactoryUnit, ContactManagersPluginInfoYamlUnit)  //
     YAML::Node plugin_config = YAML::Load(yaml_string);
     YAML::Node config = plugin_config[tesseract_common::ContactManagersPluginInfo::CONFIG_KEY];
     EXPECT_ANY_THROW(config.as<tesseract_common::ContactManagersPluginInfo>());  // NOLINT
+  }
+}
+
+TEST(TesseractPluginFactoryUnit, TaskComposerPluginInfoYamlUnit)  // NOLINT
+{
+  std::string yaml_string = R"(task_composer_plugins:
+                                 search_paths:
+                                   - /usr/local/lib
+                                 search_libraries:
+                                   - tesseract_task_composer_executor_factories
+                                   - tesseract_task_composer_node_factories
+                                 executors:
+                                   default: TaskflowTaskComposerExecutor
+                                   plugins:
+                                     TaskflowTaskComposerExecutor:
+                                       class: TaskflowTaskComposerExecutorFactory
+                                       config:
+                                         threads: 5
+                                     TaskflowTaskComposerExecutor2:
+                                       class: TaskflowTaskComposerExecutorFactory
+                                       config:
+                                         threads: 10
+                                     TaskflowTaskComposerExecutor3:
+                                       class: TaskflowTaskComposerExecutorFactory
+                                       config:
+                                         threads: 15
+                                 tasks:
+                                   default: CartesianMotionPipeline
+                                   plugins:
+                                     CartesianMotionPipeline:
+                                       class: CartesianMotionPipelineFactory
+                                       config:
+                                         input_key: "input"
+                                         output_key: "output"
+                                     FreespaceMotionPipeline:
+                                       class: FreespaceMotionPipelineFactory
+                                       config:
+                                         input_key: "input"
+                                         output_key: "output")";
+
+  {  // Success
+    YAML::Node plugin_config = YAML::Load(yaml_string);
+    YAML::Node config = plugin_config[tesseract_common::TaskComposerPluginInfo::CONFIG_KEY];
+    auto tcpi = config.as<tesseract_common::TaskComposerPluginInfo>();
+
+    const YAML::Node& plugin_info = plugin_config["task_composer_plugins"];
+    const YAML::Node& search_paths = plugin_info["search_paths"];
+    const YAML::Node& search_libraries = plugin_info["search_libraries"];
+    const YAML::Node& executor_default_plugin = plugin_info["executors"]["default"];
+    const YAML::Node& executor_plugins = plugin_info["executors"]["plugins"];
+    const YAML::Node& task_default_plugin = plugin_info["tasks"]["default"];
+    const YAML::Node& task_plugins = plugin_info["tasks"]["plugins"];
+
+    {
+      std::set<std::string> sp = tcpi.search_paths;
+      EXPECT_EQ(sp.size(), 1);
+
+      for (auto it = search_paths.begin(); it != search_paths.end(); ++it)
+      {
+        EXPECT_TRUE(sp.find(it->as<std::string>()) != sp.end());
+      }
+    }
+
+    {
+      std::set<std::string> sl = tcpi.search_libraries;
+      EXPECT_EQ(sl.size(), 2);
+
+      for (auto it = search_libraries.begin(); it != search_libraries.end(); ++it)
+      {
+        EXPECT_TRUE(sl.find(it->as<std::string>()) != sl.end());
+      }
+    }
+
+    EXPECT_EQ(executor_default_plugin.as<std::string>(), tcpi.executor_plugin_infos.default_plugin);
+    EXPECT_EQ(executor_plugins.size(), tcpi.executor_plugin_infos.plugins.size());
+
+    EXPECT_EQ(task_default_plugin.as<std::string>(), tcpi.task_plugin_infos.default_plugin);
+    EXPECT_EQ(task_plugins.size(), tcpi.task_plugin_infos.plugins.size());
+  }
+
+  {  // search_paths failure
+    std::string yaml_string = R"(task_composer_plugins:
+                                   search_paths:
+                                     failure: issue
+                                   search_libraries:
+                                     - tesseract_task_composer_executor_factories
+                                     - tesseract_task_composer_node_factories
+                                   executors:
+                                     default: TaskflowTaskComposerExecutor
+                                     plugins:
+                                       TaskflowTaskComposerExecutor:
+                                         class: TaskflowTaskComposerExecutorFactory
+                                         config:
+                                           threads: 5
+                                       TaskflowTaskComposerExecutor2:
+                                         class: TaskflowTaskComposerExecutorFactory
+                                         config:
+                                           threads: 10
+                                       TaskflowTaskComposerExecutor3:
+                                         class: TaskflowTaskComposerExecutorFactory
+                                         config:
+                                           threads: 15
+                                   tasks:
+                                     default: CartesianMotionPipeline
+                                     plugins:
+                                       CartesianMotionPipeline:
+                                         class: CartesianMotionPipelineFactory
+                                         config:
+                                           input_key: "input"
+                                           output_key: "output"
+                                       FreespaceMotionPipeline:
+                                         class: FreespaceMotionPipelineFactory
+                                         config:
+                                           input_key: "input"
+                                           output_key: "output")";
+    YAML::Node plugin_config = YAML::Load(yaml_string);
+    YAML::Node config = plugin_config[tesseract_common::TaskComposerPluginInfo::CONFIG_KEY];
+    EXPECT_ANY_THROW(config.as<tesseract_common::TaskComposerPluginInfo>());  // NOLINT
+  }
+
+  {  // search_libraries failure
+    std::string yaml_string = R"(task_composer_plugins:
+                                   search_paths:
+                                     - /usr/local/lib
+                                   search_libraries:
+                                     failure: issue
+                                   executors:
+                                     default: TaskflowTaskComposerExecutor
+                                     plugins:
+                                       TaskflowTaskComposerExecutor:
+                                         class: TaskflowTaskComposerExecutorFactory
+                                         config:
+                                           threads: 5
+                                       TaskflowTaskComposerExecutor2:
+                                         class: TaskflowTaskComposerExecutorFactory
+                                         config:
+                                           threads: 10
+                                       TaskflowTaskComposerExecutor3:
+                                         class: TaskflowTaskComposerExecutorFactory
+                                         config:
+                                           threads: 15
+                                   tasks:
+                                     default: CartesianMotionPipeline
+                                     plugins:
+                                       CartesianMotionPipeline:
+                                         class: CartesianMotionPipelineFactory
+                                         config:
+                                           input_key: "input"
+                                           output_key: "output"
+                                       FreespaceMotionPipeline:
+                                         class: FreespaceMotionPipelineFactory
+                                         config:
+                                           input_key: "input"
+                                           output_key: "output")";
+    YAML::Node plugin_config = YAML::Load(yaml_string);
+    YAML::Node config = plugin_config[tesseract_common::TaskComposerPluginInfo::CONFIG_KEY];
+    EXPECT_ANY_THROW(config.as<tesseract_common::TaskComposerPluginInfo>());  // NOLINT
+  }
+
+  {  // missing executor plugins failure
+    std::string yaml_string = R"(task_composer_plugins:
+                                   search_paths:
+                                     - /usr/local/lib
+                                   search_libraries:
+                                     - tesseract_task_composer_executor_factories
+                                     - tesseract_task_composer_node_factories
+                                   executors:
+                                     default: TaskflowTaskComposerExecutor
+                                   tasks:
+                                     default: CartesianMotionPipeline
+                                     plugins:
+                                       CartesianMotionPipeline:
+                                         class: CartesianMotionPipelineFactory
+                                         config:
+                                           input_key: "input"
+                                           output_key: "output"
+                                       FreespaceMotionPipeline:
+                                         class: FreespaceMotionPipelineFactory
+                                         config:
+                                           input_key: "input"
+                                           output_key: "output")";
+    YAML::Node plugin_config = YAML::Load(yaml_string);
+    YAML::Node config = plugin_config[tesseract_common::TaskComposerPluginInfo::CONFIG_KEY];
+    EXPECT_ANY_THROW(config.as<tesseract_common::TaskComposerPluginInfo>());  // NOLINT
+  }
+
+  {  // executor plugins is not map failure
+    std::string yaml_string = R"(task_composer_plugins:
+                                   search_paths:
+                                     - /usr/local/lib
+                                   search_libraries:
+                                     - tesseract_task_composer_executor_factories
+                                     - tesseract_task_composer_node_factories
+                                   executors:
+                                     - TaskflowTaskComposerExecutor:
+                                         class: TaskflowTaskComposerExecutorFactory
+                                         config:
+                                           threads: 5
+                                     - TaskflowTaskComposerExecutor2:
+                                         class: TaskflowTaskComposerExecutorFactory
+                                         config:
+                                           threads: 10
+                                     - TaskflowTaskComposerExecutor3:
+                                         class: TaskflowTaskComposerExecutorFactory
+                                         config:
+                                           threads: 15
+                                   tasks:
+                                     default: CartesianMotionPipeline
+                                     plugins:
+                                       CartesianMotionPipeline:
+                                         class: CartesianMotionPipelineFactory
+                                         config:
+                                           input_key: "input"
+                                           output_key: "output"
+                                       FreespaceMotionPipeline:
+                                         class: FreespaceMotionPipelineFactory
+                                         config:
+                                           input_key: "input"
+                                           output_key: "output")";
+    YAML::Node plugin_config = YAML::Load(yaml_string);
+    YAML::Node config = plugin_config[tesseract_common::TaskComposerPluginInfo::CONFIG_KEY];
+    EXPECT_ANY_THROW(config.as<tesseract_common::TaskComposerPluginInfo>());  // NOLINT
+  }
+
+  {  // missing node plugins failure
+    std::string yaml_string = R"(task_composer_plugins:
+                                   search_paths:
+                                     - /usr/local/lib
+                                   search_libraries:
+                                     - tesseract_task_composer_executor_factories
+                                     - tesseract_task_composer_node_factories
+                                   executors:
+                                     default: TaskflowTaskComposerExecutor
+                                     plugins:
+                                       TaskflowTaskComposerExecutor:
+                                         class: TaskflowTaskComposerExecutorFactory
+                                         config:
+                                           threads: 5
+                                       TaskflowTaskComposerExecutor2:
+                                         class: TaskflowTaskComposerExecutorFactory
+                                         config:
+                                           threads: 10
+                                       TaskflowTaskComposerExecutor3:
+                                         class: TaskflowTaskComposerExecutorFactory
+                                         config:
+                                           threads: 15
+                                   tasks:
+                                     default: CartesianMotionPipeline)";
+    YAML::Node plugin_config = YAML::Load(yaml_string);
+    YAML::Node config = plugin_config[tesseract_common::TaskComposerPluginInfo::CONFIG_KEY];
+    EXPECT_ANY_THROW(config.as<tesseract_common::TaskComposerPluginInfo>());  // NOLINT
+  }
+
+  {  // continuous plugins is not map failure
+    std::string yaml_string = R"(task_composer_plugins:
+                                   search_paths:
+                                     - /usr/local/lib
+                                   search_libraries:
+                                     - tesseract_task_composer_executor_factories
+                                     - tesseract_task_composer_node_factories
+                                   executors:
+                                     default: TaskflowTaskComposerExecutor
+                                     plugins:
+                                       TaskflowTaskComposerExecutor:
+                                         class: TaskflowTaskComposerExecutorFactory
+                                         config:
+                                           threads: 5
+                                       TaskflowTaskComposerExecutor2:
+                                         class: TaskflowTaskComposerExecutorFactory
+                                         config:
+                                           threads: 10
+                                       TaskflowTaskComposerExecutor3:
+                                         class: TaskflowTaskComposerExecutorFactory
+                                         config:
+                                           threads: 15
+                                   tasks:
+                                     - CartesianMotionPipeline:
+                                         class: CartesianMotionPipelineFactory
+                                         config:
+                                           input_key: "input"
+                                           output_key: "output"
+                                     - FreespaceMotionPipeline:
+                                         class: FreespaceMotionPipelineFactory
+                                         config:
+                                           input_key: "input"
+                                           output_key: "output")";
+    YAML::Node plugin_config = YAML::Load(yaml_string);
+    YAML::Node config = plugin_config[tesseract_common::TaskComposerPluginInfo::CONFIG_KEY];
+    EXPECT_ANY_THROW(config.as<tesseract_common::TaskComposerPluginInfo>());  // NOLINT
   }
 }
 
