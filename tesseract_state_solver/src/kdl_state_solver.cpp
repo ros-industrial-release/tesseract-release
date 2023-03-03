@@ -37,6 +37,9 @@ namespace tesseract_scene_graph
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
+// This is compared directory to the OFKT state solver results so disable code coverage
+
+// LCOV_EXCL_START
 StateSolver::UPtr KDLStateSolver::clone() const { return std::make_unique<KDLStateSolver>(*this); }
 
 KDLStateSolver::KDLStateSolver(const tesseract_scene_graph::SceneGraph& scene_graph)
@@ -214,7 +217,7 @@ bool KDLStateSolver::isActiveLinkName(const std::string& link_name) const
 {
   return (std::find(data_.active_link_names.begin(), data_.active_link_names.end(), link_name) !=
           data_.active_link_names.end());
-};
+}
 
 bool KDLStateSolver::hasLinkName(const std::string& link_name) const
 {
@@ -313,7 +316,7 @@ void KDLStateSolver::calculateTransformsHelper(SceneState& state,
       current_frame = GetTreeElementSegment(current_element).pose(0);
 
     Eigen::Isometry3d local_frame = convert(current_frame);
-    Eigen::Isometry3d global_frame = parent_frame * local_frame;
+    Eigen::Isometry3d global_frame{ parent_frame * local_frame };
     state.link_transforms[current_element.segment.getName()] = global_frame;
     if (current_element.segment.getName() != data_.tree.getRootSegment()->first)
       state.joint_transforms[current_element.segment.getJoint().getName()] = global_frame;
@@ -370,5 +373,5 @@ KDL::JntArray KDLStateSolver::getKDLJntArray(const std::unordered_map<std::strin
 
   return kdl_joints;
 }
-
+// LCOV_EXCL_STOP
 }  // namespace tesseract_scene_graph

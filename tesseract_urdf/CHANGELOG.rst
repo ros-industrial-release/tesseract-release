@@ -2,6 +2,14 @@
 Changelog for package tesseract_urdf
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.15.0 (2023-03-03)
+-------------------
+* Performance improvements found using callgrind (`#852 <https://github.com/tesseract-robotics/tesseract/issues/852>`_)
+* Contributors: Levi Armstrong
+
+0.14.0 (2022-10-23)
+-------------------
+
 0.13.1 (2022-08-25)
 -------------------
 

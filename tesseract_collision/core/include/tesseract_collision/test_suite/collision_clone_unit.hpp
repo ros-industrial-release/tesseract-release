@@ -110,16 +110,30 @@ inline void addCollisionObjects(DiscreteContactManager& checker)
 inline void
 runTest(DiscreteContactManager& checker, double dist_tol = 0.001, double nearest_tol = 0.001, double normal_tol = 0.001)
 {
+  // Check name which should not be empty
+  EXPECT_FALSE(checker.getName().empty());
+
   // Add collision objects
+  detail::addCollisionObjects(checker);
+
+  // Call it again to test adding same object
   detail::addCollisionObjects(checker);
 
   //////////////////////////////////////
   // Test when object is in collision
   //////////////////////////////////////
-  checker.setActiveCollisionObjects({ "sphere_link", "sphere1_link" });
-  checker.setCollisionMarginData(CollisionMarginData(0.1));
-  EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.1, 1e-5);
+  std::vector<std::string> active_links{ "sphere_link", "sphere1_link" };
+  checker.setActiveCollisionObjects(active_links);
+  std::vector<std::string> check_active_links = checker.getActiveCollisionObjects();
+  EXPECT_TRUE(tesseract_common::isIdentical<std::string>(active_links, check_active_links, false));
+
+  EXPECT_TRUE(checker.getIsContactAllowedFn() == nullptr);
+
+  checker.setCollisionMarginData(CollisionMarginData(0.5));
+  EXPECT_NEAR(checker.getCollisionMarginData().getMaxCollisionMargin(), 0.5, 1e-5);
   EXPECT_FALSE(checker.isCollisionObjectEnabled("thin_box_link"));
+
+  checker.setPairCollisionMarginData("sphere_link", "sphere1_link", 0.1);
 
   // Test when object is inside another
   tesseract_common::TransformMap location;
@@ -133,7 +147,7 @@ runTest(DiscreteContactManager& checker, double dist_tol = 0.001, double nearest
   checker.contactTest(result, ContactRequest(ContactTestType::CLOSEST));
 
   ContactResultVector result_vector;
-  flattenResults(std::move(result), result_vector);
+  flattenMoveResults(std::move(result), result_vector);
 
   std::vector<int> idx = { 0, 1, 1 };
   if (result_vector[0].link_names[0] != "sphere_link")
@@ -146,7 +160,7 @@ runTest(DiscreteContactManager& checker, double dist_tol = 0.001, double nearest
   cloned_checker->contactTest(cloned_result, ContactRequest(ContactTestType::CLOSEST));
 
   ContactResultVector cloned_result_vector;
-  flattenResults(std::move(cloned_result), cloned_result_vector);
+  flattenMoveResults(std::move(cloned_result), cloned_result_vector);
 
   std::vector<int> cloned_idx = { 0, 1, 1 };
   if (cloned_result_vector[0].link_names[0] != "sphere_link")
