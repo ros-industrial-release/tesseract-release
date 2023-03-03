@@ -1,0 +1,12 @@
+Source: ros-noetic-tesseract-collision
+Section: misc
+Priority: optional
+Maintainer: Levi Armstrong <Levi.Armstrong@swri.org>
+Build-Depends: debhelper (>= 9.0.0), cmake, libbenchmark-dev <!nocheck>, libboost-program-options-dev, libboost-system-dev, libbullet-dev, libbullet-extras-dev, libconsole-bridge-dev, libeigen3-dev, libgtest-dev <!nocheck>, libomp-dev, libyaml-cpp-dev, ros-noetic-fcl, ros-noetic-ros-industrial-cmake-boilerplate, ros-noetic-tesseract-common, ros-noetic-tesseract-geometry, ros-noetic-tesseract-scene-graph <!nocheck>, ros-noetic-tesseract-support
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-noetic-tesseract-collision
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libboost-program-options-dev, libboost-program-options1.67.0, libboost-system-dev, libboost-system1.67.0, libbullet-dev, libbullet-extras-dev, libconsole-bridge-dev, libeigen3-dev, libomp-dev, libyaml-cpp-dev, ros-noetic-fcl, ros-noetic-tesseract-common, ros-noetic-tesseract-geometry, ros-noetic-tesseract-support
+Description: The tesseract_collision package
