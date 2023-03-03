@@ -36,6 +36,8 @@ TESSERACT_COMMON_IGNORE_WARNINGS_POP
 
 namespace tesseract_environment
 {
+Command::Command(CommandType type) : type_(type) {}
+
 template <class Archive>
 void save(Archive& ar, const CommandType& g, const unsigned int /*version*/)
 {
@@ -63,7 +65,7 @@ bool Command::operator==(const Command& rhs) const
   equal &= type_ == rhs.type_;
   return equal;
 }
-bool Command::operator!=(const Command& rhs) const { return !operator==(rhs); }
+bool Command::operator!=(const Command& rhs) const { return !operator==(rhs); }  // LCOV_EXCL_LINE
 
 template <class Archive>
 void Command::serialize(Archive& ar, const unsigned int /*version*/)

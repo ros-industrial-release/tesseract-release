@@ -2,6 +2,18 @@
 Changelog for package tesseract_srdf
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.15.0 (2023-03-03)
+-------------------
+* Performance improvements found using callgrind (`#852 <https://github.com/tesseract-robotics/tesseract/issues/852>`_)
+* Improve tesseract_srdf code coverage (`#836 <https://github.com/tesseract-robotics/tesseract/issues/836>`_)
+* Fix KinematicsInformation equal and insert methods
+* Contributors: Levi Armstrong
+
+0.14.0 (2022-10-23)
+-------------------
+* Order srdf save so plugins are above the acm
+* Contributors: Levi Armstrong
+
 0.13.1 (2022-08-25)
 -------------------
 * Move boost serialization export outside tesseract_common namespace in srdf_model.cpp
