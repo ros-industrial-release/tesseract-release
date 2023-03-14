@@ -76,7 +76,7 @@ python3 -m pip install --user  tesseract_robotics tesseract_robotics_viewer
 
 * [Wiki](https://tesseract-docs.readthedocs.io)
 * [Doxygen](https://tesseract-robotics.github.io/tesseract_docs/tesseract/)
-* [Benchmark](https://tesseract-robotics.github.io/tesseract/dev/bench)
+* [Benchmark](https://tesseract-robotics.github.io/tesseract_docs/tesseract/dev/bench/)
 
 ## Evolution
 
@@ -96,7 +96,7 @@ See [issue #66](https://github.com/tesseract-robotics/tesseract/issues/66)
 ## Build Instructions
 
 1) Clone repository into your workspace
-2) Clone the repositories in the dependencies.rosinstall file using wstool or some other method (e.g. manually git cloning them)
+2) Clone the repositories in the dependencies.repos file using wstool or some other method (e.g. manually git cloning them)
 3) Build the workspace using catkin tools, colcon, or a similar tool
 
 NOTE: For noetic tesseract_ext is not required. Install the following dependencies: libbullet-dev, libbullet-extras-dev and ros-noetic-fcl. Taskflow can be install using the PPA below.

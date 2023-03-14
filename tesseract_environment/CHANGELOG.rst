@@ -2,6 +2,9 @@
 Changelog for package tesseract_environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.15.1 (2023-03-14)
+-------------------
+
 0.15.0 (2023-03-03)
 -------------------
 * Improve tesseract_environment code coverage
