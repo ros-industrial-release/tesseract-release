@@ -81,6 +81,7 @@ add_library(
   src/commands/add_kinematics_information_command.cpp
   src/commands/add_link_command.cpp
   src/commands/add_scene_graph_command.cpp
+  src/commands/add_trajectory_link_command.cpp
   src/commands/change_collision_margins_command.cpp
   src/commands/change_joint_acceleration_limits_command.cpp
   src/commands/change_joint_origin_command.cpp
@@ -132,13 +133,13 @@ install(
   PATTERN "*.h"
   PATTERN ".svn" EXCLUDE)
 
-if(TESSERACT_ENABLE_TESTING)
+if(TESSERACT_ENABLE_TESTING OR TESSERACT_ENVIRONMENT_ENABLE_TESTING)
   enable_testing()
   add_run_tests_target(ENABLE ${TESSERACT_ENABLE_RUN_TESTING})
   add_subdirectory(test)
 endif()
 
-if(TESSERACT_ENABLE_BENCHMARKING)
+if(TESSERACT_ENABLE_BENCHMARKING OR TESSERACT_ENVIRONMENT_ENABLE_BENCHMARKING)
   add_subdirectory(test/benchmarks)
 endif()
 
