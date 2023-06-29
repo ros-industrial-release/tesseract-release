@@ -95,6 +95,7 @@ inline static void numericalJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
  * @param link_point   The point on the link for which to calculate the jacobian
  */
 inline static void numericalJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
+                                     const Eigen::Isometry3d& change_base,
                                      const JointGroup& joint_group,
                                      const Eigen::Ref<const Eigen::VectorXd>& joint_values,
                                      const std::string& link_name,
@@ -103,14 +104,14 @@ inline static void numericalJacobian(Eigen::Ref<Eigen::MatrixXd> jacobian,
   Eigen::VectorXd njvals;
   double delta = 1e-8;
   tesseract_common::TransformMap poses = joint_group.calcFwdKin(joint_values);
-  Eigen::Isometry3d pose = poses[link_name];
+  Eigen::Isometry3d pose = change_base * poses[link_name];
 
   for (int i = 0; i < static_cast<int>(joint_values.size()); ++i)
   {
     njvals = joint_values;
     njvals[i] += delta;
     tesseract_common::TransformMap updated_poses = joint_group.calcFwdKin(njvals);
-    Eigen::Isometry3d updated_pose = updated_poses[link_name];
+    Eigen::Isometry3d updated_pose = change_base * updated_poses[link_name];
 
     Eigen::Vector3d temp = pose * link_point;
     Eigen::Vector3d temp2 = updated_pose * link_point;
@@ -483,7 +484,7 @@ inline bool isValid(const std::array<FloatType, 6>& qs)
 }
 
 /**
- * @brief This take an array of floats and modifies them in place to be between [-PI, PI]
+ * @brief This takes an array of floats and modifies them in place to be between [-PI, PI]
  * @param qs A pointer to a float array
  * @param dof The length of the float array
  */
@@ -496,8 +497,30 @@ inline void harmonizeTowardZero(Eigen::Ref<VectorX<FloatType>> qs,
 
   for (const auto& i : redundancy_capable_joints)
   {
-    FloatType diff = std::fmod(qs[i] + pi, two_pi);
+    const auto diff = std::fmod(qs[i] + pi, two_pi);
     qs[i] = (diff < 0) ? (diff + pi) : (diff - pi);
+  }
+}
+
+/**
+ * @brief This takes the array of floats and modifies them in place to be between [-PI, PI] relative to limits median
+ * @param qs A pointer to a float array
+ * @param position_limits The limits leveraged for calculating median
+ */
+template <typename FloatType>
+inline void harmonizeTowardMedian(Eigen::Ref<VectorX<FloatType>> qs,
+                                  const std::vector<Eigen::Index>& redundancy_capable_joints,
+                                  const Eigen::Ref<const Eigen::Matrix<FloatType, Eigen::Dynamic, 2>>& position_limits)
+{
+  const static auto pi = FloatType(M_PI);
+  const static auto two_pi = FloatType(2.0 * M_PI);
+
+  for (const auto& i : redundancy_capable_joints)
+  {
+    const auto mean = (position_limits(i, 0) + position_limits(i, 1)) / 2.0;
+    const auto diff = std::fmod((qs[i] - mean) + pi, two_pi);
+    const auto vv = (diff < 0) ? (diff + pi) : (diff - pi);
+    qs[i] = (vv + mean);
   }
 }
 
