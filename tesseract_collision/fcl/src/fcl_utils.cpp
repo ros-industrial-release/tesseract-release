@@ -208,7 +208,6 @@ bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, voi
 
   const auto* cd1 = static_cast<const CollisionObjectWrapper*>(o1->getUserData());
   const auto* cd2 = static_cast<const CollisionObjectWrapper*>(o2->getUserData());
-  assert(cd1->getName() != cd2->getName());
 
   bool needs_collision = cd1->m_enabled && cd2->m_enabled &&
                          (cd1->m_collisionFilterGroup & cd2->m_collisionFilterMask) &&  // NOLINT
@@ -257,9 +256,9 @@ bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, voi
       contact.distance = -1.0 * fcl_contact.penetration_depth;
       contact.normal = fcl_contact.normal;
 
-      ObjectPairKey pc = getObjectPairKey(cd1->getName(), cd2->getName());
-      const auto& it = cdata->res->find(pc);
-      bool found = (it != cdata->res->end());
+      ObjectPairKey pc = tesseract_common::makeOrderedLinkPair(cd1->getName(), cd2->getName());
+      const auto it = cdata->res->find(pc);
+      bool found = (it != cdata->res->end() && !it->second.empty());
 
       processResult(*cdata, contact, pc, found);
     }
@@ -277,7 +276,6 @@ bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void
 
   const auto* cd1 = static_cast<const CollisionObjectWrapper*>(o1->getUserData());
   const auto* cd2 = static_cast<const CollisionObjectWrapper*>(o2->getUserData());
-  assert(cd1->getName() != cd2->getName());
 
   bool needs_collision = cd1->m_enabled && cd2->m_enabled &&
                          (cd1->m_collisionFilterGroup & cd2->m_collisionFilterMask) &&  // NOLINT
@@ -322,9 +320,9 @@ bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void
     // TODO: There is an issue with FCL need to track down
     assert(!std::isnan(contact.nearest_points[0](0)));
 
-    ObjectPairKey pc = getObjectPairKey(cd1->getName(), cd2->getName());
-    const auto& it = cdata->res->find(pc);
-    bool found = (it != cdata->res->end());
+    ObjectPairKey pc = tesseract_common::makeOrderedLinkPair(cd1->getName(), cd2->getName());
+    const auto it = cdata->res->find(pc);
+    bool found = (it != cdata->res->end() && !it->second.empty());
 
     processResult(*cdata, contact, pc, found);
   }
@@ -349,7 +347,7 @@ CollisionObjectWrapper::CollisionObjectWrapper(std::string name,
   collision_geometries_.reserve(shapes_.size());
   collision_objects_.reserve(shapes_.size());
   collision_objects_raw_.reserve(shapes_.size());
-  for (std::size_t i = 0; i < shapes_.size(); ++i)
+  for (std::size_t i = 0; i < shapes_.size(); ++i)  // NOLINT
   {
     CollisionGeometryPtr subshape = createShapePrimitive(shapes_[i]);
     if (subshape != nullptr)
