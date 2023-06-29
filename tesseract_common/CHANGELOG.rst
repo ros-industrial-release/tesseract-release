@@ -2,6 +2,43 @@
 Changelog for package tesseract_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.18.0 (2023-06-29)
+-------------------
+* Add package cmake flags for testing, examples and benchmarks
+* Removed gcc-specific options from clang config
+* Fix JointState equal operator
+* Contributors: Levi Armstrong, Roelof
+
+0.17.0 (2023-06-06)
+-------------------
+* Windows updates (`#893 <https://github.com/tesseract-robotics/tesseract/issues/893>`_)
+* Update resource_locator.cpp (`#889 <https://github.com/tesseract-robotics/tesseract/issues/889>`_)
+* Contributors: John Wason, Levi Armstrong
+
+0.16.3 (2023-05-04)
+-------------------
+
+0.16.2 (2023-04-28)
+-------------------
+* Add yaml support for tool path
+* Contributors: Levi Armstrong
+
+0.16.1 (2023-04-11)
+-------------------
+* Improve tesseract_common unit test coverage
+* Improve general resource locator
+* Contributors: Levi Armstrong
+
+0.16.0 (2023-04-09)
+-------------------
+* Add documentation to ContactResultMap
+* Avoid multiple memory allocations in PairHash::operator()
+* Add contact results class
+* Contributors: Levi Armstrong
+
+0.15.3 (2023-03-22)
+-------------------
+
 0.15.2 (2023-03-15)
 -------------------
 

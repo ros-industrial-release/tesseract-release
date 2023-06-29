@@ -2,6 +2,34 @@
 Changelog for package tesseract_geometry
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.18.0 (2023-06-29)
+-------------------
+* Add package cmake flags for testing, examples and benchmarks
+* Fix makeConvexMesh to pass through scale used on resource
+* Contributors: Levi Armstrong
+
+0.17.0 (2023-06-06)
+-------------------
+
+0.16.3 (2023-05-04)
+-------------------
+
+0.16.2 (2023-04-28)
+-------------------
+
+0.16.1 (2023-04-11)
+-------------------
+* Fix polygon_mesh default geometry type in constructor
+* Contributors: Levi Armstrong
+
+0.16.0 (2023-04-09)
+-------------------
+* Improve geometry code coverage
+* Contributors: Levi Armstrong
+
+0.15.3 (2023-03-22)
+-------------------
+
 0.15.2 (2023-03-15)
 -------------------
 * Switch include in tesseract_collision
