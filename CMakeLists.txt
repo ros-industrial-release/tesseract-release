@@ -10,7 +10,7 @@ if(WIN32)
 endif()
 
 find_package(Eigen3 REQUIRED)
-find_package(Boost REQUIRED COMPONENTS system program_options)
+find_package(Boost REQUIRED COMPONENTS system program_options serialization)
 find_package(octomap REQUIRED)
 find_package(console_bridge REQUIRED)
 find_package(tesseract_geometry REQUIRED)
@@ -100,19 +100,19 @@ target_compile_definitions(${PROJECT_NAME}_core
                            PRIVATE TESSERACT_CONTACT_MANAGERS_PLUGINS="${CONTACT_MANAGERS_PLUGINS_STRING}")
 
 # Testing
-if(TESSERACT_ENABLE_TESTING AND TESSERACT_BUILD_FCL)
+if((TESSERACT_ENABLE_TESTING OR TESSERACT_COLLISION_ENABLE_TESTING) AND TESSERACT_BUILD_FCL)
   enable_testing()
   add_run_tests_target(ENABLE ${TESSERACT_ENABLE_RUN_TESTING})
   add_subdirectory(test)
 endif()
 
 # Benchmarks
-if(TESSERACT_ENABLE_BENCHMARKING AND TESSERACT_BUILD_FCL)
+if((TESSERACT_ENABLE_BENCHMARKING OR TESSERACT_COLLISION_ENABLE_BENCHMARKING) AND TESSERACT_BUILD_FCL)
   add_subdirectory(test/benchmarks)
 endif()
 
 # Examples
-if(TESSERACT_ENABLE_EXAMPLES AND TESSERACT_BUILD_FCL)
+if((TESSERACT_ENABLE_EXAMPLES OR TESSERACT_COLLISION_ENABLE_EXAMPLES) AND TESSERACT_BUILD_FCL)
   add_subdirectory(examples)
 endif()
 
@@ -142,16 +142,6 @@ if(TESSERACT_PACKAGE)
   if(TESSERACT_BUILD_FCL)
     list(APPEND LINUX_DEPENDS "libfcl-dev (>= 0.6.0) | ${TESSERACT_PACKAGE_PREFIX}fcl")
     list(APPEND LINUX_DEPENDS "fcl (>= 0.6.0) | ${TESSERACT_PACKAGE_PREFIX}fcl")
-  endif()
-
-  if(TESSERACT_BUILD_VHACD)
-    list(APPEND LINUX_DEPENDS "libomp-dev")
-    list(APPEND WINDOWS_DEPENDS "omp")
-
-    if(OpenCL_FOUND)
-      list(APPEND LINUX_DEPENDS "ocl-icd-opencl-dev")
-      list(APPEND WINDOWS_DEPENDS "ocl-icd-opencl")
-    endif()
   endif()
 
   tesseract_cpack(
