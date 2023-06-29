@@ -85,6 +85,19 @@ struct PairHash
  */
 LinkNamesPair makeOrderedLinkPair(const std::string& link_name1, const std::string& link_name2);
 
+/**
+ * @brief Populate a pair of strings, where the pair.first is always <= pair.second.
+ *
+ * This is used to avoid multiple memory application throughout the code base
+ *
+ * This is commonly used along with PairHash as the key to an unordered_map<LinkNamesPair, Type, PairHash>
+ *
+ * @param pair The link name pair to load a lexicographically sorted pair of strings
+ * @param link_name1 First link name
+ * @param link_name2 Second link nam
+ */
+void makeOrderedLinkPair(LinkNamesPair& pair, const std::string& link_name1, const std::string& link_name2);
+
 /** @brief The Plugin Information struct */
 // NOLINTNEXTLINE
 struct PluginInfo
