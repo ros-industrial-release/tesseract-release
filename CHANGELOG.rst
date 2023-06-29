@@ -2,6 +2,34 @@
 Changelog for package tesseract_kinematics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.18.0 (2023-06-29)
+-------------------
+* Update kinematics group inverse kinematics to harmonize within joint limits (`#899 <https://github.com/tesseract-robotics/tesseract/issues/899>`_)
+* Add package cmake flags for testing, examples and benchmarks
+* Contributors: John Wason, Levi Armstrong
+
+0.17.0 (2023-06-06)
+-------------------
+
+0.16.3 (2023-05-04)
+-------------------
+
+0.16.2 (2023-04-28)
+-------------------
+
+0.16.1 (2023-04-11)
+-------------------
+* Improve tesseract_kinematics code coverage
+* Contributors: Levi Armstrong
+
+0.16.0 (2023-04-09)
+-------------------
+* Add AddTrajectoryLinkCommand
+* Contributors: Levi Armstrong
+
+0.15.3 (2023-03-22)
+-------------------
+
 0.15.2 (2023-03-15)
 -------------------
 
