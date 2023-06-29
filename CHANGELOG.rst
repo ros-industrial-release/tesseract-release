@@ -2,6 +2,44 @@
 Changelog for package tesseract_environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.18.0 (2023-06-29)
+-------------------
+* Update kinematics group inverse kinematics to harmonize within joint limits (`#899 <https://github.com/tesseract-robotics/tesseract/issues/899>`_)
+* Trajectory logging fixup (`#908 <https://github.com/tesseract-robotics/tesseract/issues/908>`_)
+* Improve Trajectory Collision Logging (`#765 <https://github.com/tesseract-robotics/tesseract/issues/765>`_)
+* Add package cmake flags for testing, examples and benchmarks
+* Contributors: John Wason, Levi Armstrong, Tyler Marr
+
+0.17.0 (2023-06-06)
+-------------------
+* Windows updates (`#893 <https://github.com/tesseract-robotics/tesseract/issues/893>`_)
+* Fix check trajectory print statements (`#892 <https://github.com/tesseract-robotics/tesseract/issues/892>`_)
+* implemented benchmarking for checking trajectories (`#887 <https://github.com/tesseract-robotics/tesseract/issues/887>`_)
+* Contributors: John Wason, Levi Armstrong, Tyler Marr
+
+0.16.3 (2023-05-04)
+-------------------
+
+0.16.2 (2023-04-28)
+-------------------
+
+0.16.1 (2023-04-11)
+-------------------
+* Add unit tests to cover new addTrajectoryLinkCommand
+* Contributors: Levi Armstrong
+
+0.16.0 (2023-04-09)
+-------------------
+* Improve collision code coverage
+* Add ContactResultMap shrinkToFit and CollisionCheckProgramType
+* Add AddTrajectoryLinkCommand
+* General cleanup of commands moving things to cpp
+* Add contact results class
+* Contributors: Levi Armstrong
+
+0.15.3 (2023-03-22)
+-------------------
+
 0.15.2 (2023-03-15)
 -------------------
 * Switch include in tesseract_collision
