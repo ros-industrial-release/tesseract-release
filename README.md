@@ -1,3 +1,37 @@
+## tesseract (noetic) - 0.18.1-1
+
+The packages in the `tesseract` repository were released into the `noetic` distro by running `/usr/bin/bloom-release tesseract --rosdistro noetic` on `Sat, 01 Jul 2023 02:24:03 -0000`
+
+These packages were released:
+- `tesseract_collision`
+- `tesseract_common`
+- `tesseract_environment`
+- `tesseract_geometry`
+- `tesseract_kinematics`
+- `tesseract_scene_graph`
+- `tesseract_srdf`
+- `tesseract_state_solver`
+- `tesseract_support`
+- `tesseract_urdf`
+- `tesseract_visualization`
+
+Version of package(s) in repository `tesseract`:
+
+- upstream repository: https://github.com/tesseract-robotics/tesseract.git
+- release repository: https://github.com/ros-industrial-release/tesseract-release.git
+- rosdistro version: `0.18.0-1`
+- old version: `0.18.0-1`
+- new version: `0.18.1-1`
+
+Versions of tools used:
+
+- bloom version: `0.11.2`
+- catkin_pkg version: `0.5.2`
+- rosdep version: `0.22.2`
+- rosdistro version: `0.9.0`
+- vcstools version: `0.1.42`
+
+
 ## tesseract (noetic) - 0.18.0-1
 
 The packages in the `tesseract` repository were released into the `noetic` distro by running `/usr/bin/bloom-release tesseract --rosdistro noetic` on `Thu, 29 Jun 2023 21:41:11 -0000`
